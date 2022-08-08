@@ -14,7 +14,7 @@ struct ChartView: View {
     }
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             Text(self.chartObservableObject.description).font(.system(size: 12))
             self.makeChart()
             positionsView

@@ -10,7 +10,7 @@ func mapToUiPosition(_ position: Position, _ lastPrice: Int64) -> UiPosition {
     let lastPositionPrice = position.closed ? position.endPrice! : NSDecimalNumber(decimal: Decimal(lastPrice) / Decimal(100))
     let resultPct = getPercentDiff(value1: position.startPrice ?? NSDecimalNumber.zero, value2: lastPositionPrice, negative: !position.long)
     
-    let resultText = decimalToString(resultPct, 2, showSign: true)
+    let resultText = decimalToString(resultPct, 2, showSign: true) + "%"
     let resultColor = (resultPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedAscending) ? Color.red : Color.green
     return UiPosition(id: position.id,
                       titleText: titleText,
