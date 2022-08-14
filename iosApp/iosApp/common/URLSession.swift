@@ -43,3 +43,11 @@ extension URLSession {
         }
     }
 }
+
+class HttpError : Error {
+    let errorCode: Int
+    
+    init(_ errorCode: Int) {
+        self.errorCode = errorCode
+    }
+}

@@ -80,7 +80,7 @@ class ChartObservableObject: ObservableObject {
             let chartState = (chartStates.isEmpty) ? ChartState(context: c.context()) : chartStates[0]
             chartState.seed = self.seed
             chartState.chartLen = Int32(periods.count - 1)
-            c.saveContext()
+            c.saveContext(c.context())
         }
     }
     

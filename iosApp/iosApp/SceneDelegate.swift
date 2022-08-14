@@ -16,8 +16,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let chartObservableObject = createChartObservableObject()
         let positionsView = PositionsView(container, chartObservableObject)
         let chartView = ChartView(positionsView, chartObservableObject).environment(\.managedObjectContext, container.context())
-
-        let contentView = MainTabView(chartView)
+        let leaderboardView = LeaderboardView(container)
+        
+        let contentView = MainTabView(chartView, leaderboardView)
         
         // Use a UIHostingController as window root view controller.
         if let windowScene = scene as? UIWindowScene {

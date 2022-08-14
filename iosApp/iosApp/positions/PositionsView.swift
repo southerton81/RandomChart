@@ -3,7 +3,7 @@ import CoreData
 
 struct PositionsView: View {
     let container: PersistentContainer
-    @ObservedObject var positionsObservableObject = PositionsObservableObject()
+    @StateObject var positionsObservableObject = PositionsObservableObject()
     @ObservedObject var chartObservableObject: ChartObservableObject
     @State private var bottomSheetShown = false
     @State private var isSliding = false // Prevent BottomSheetView drag gesture from interacting with the Slider
@@ -31,8 +31,10 @@ struct PositionsView: View {
             ZStack {
                 
                 VStack(spacing: 0) {
-                    Text("Total " + decimalToString(self.positionsObservableObject.totalCap, 0) + "$ Free " + decimalToString(self.positionsObservableObject.freeFunds, 0) + "$")
-                        .font(.footnote)
+                    if (positionsObservableObject.calculating == false) {
+                        Text("Total " + decimalToString(self.positionsObservableObject.totalCap, 0) + "$ Free " + decimalToString(self.positionsObservableObject.freeFunds, 0) + "$")
+                            .font(.footnote)
+                    }
                     
                     list
                     
@@ -83,7 +85,11 @@ struct PositionsView: View {
                                                              Int32(self.chartObservableObject.lastPeriodIndex()))
                     }) {
                         Text(uiPosition.action?.caption ?? "")
-                    }.padding(10).foregroundColor(.white).background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 18)).buttonStyle(PlainButtonStyle())
+                    }.padding(10).foregroundColor(.white)
+                        .buttonStyle(PlainButtonStyle())
+                        .background(Color.blue)
+                        .clipShape(RoundedRectangle(cornerRadius:18))
+                        .disabled(self.positionsObservableObject.calculating)
                 }
             }
         }.listStyle(SidebarListStyle())
@@ -107,8 +113,10 @@ struct PositionsView: View {
             }) {
                 Text("Short")
             }.padding().foregroundColor(.white)
-                .background(self.positionsObservableObject.canOpenNewPos ? Color.red : Color.gray)
-                .clipShape(RoundedRectangle(cornerRadius: 20)).disabled(!self.positionsObservableObject.canOpenNewPos)
+                .buttonStyle(PlainButtonStyle())
+                .background(Color.red)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(!self.positionsObservableObject.canOpenNewPos)
             
             Button(action: {
                 self.positionsObservableObject.openNewPosition(self.container, self.chartObservableObject.lastPriceCents(),
@@ -117,8 +125,10 @@ struct PositionsView: View {
             }) {
                 Text("Long")
             }.padding().foregroundColor(.white)
-                .background(self.positionsObservableObject.canOpenNewPos ? Color.green : Color.gray)
-                .clipShape(RoundedRectangle(cornerRadius: 20)).disabled(!self.positionsObservableObject.canOpenNewPos)
+                .buttonStyle(PlainButtonStyle())
+                .background(Color.green)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(!self.positionsObservableObject.canOpenNewPos)
             
             Button(action: {
                 currentOffset = self.chartObservableObject.next(currentOffset)
@@ -127,7 +137,11 @@ struct PositionsView: View {
                 self.chartObservableObject.saveChartState(self.container)
             }) {
                 Text("Next")
-            }.padding().foregroundColor(.white).background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 20))
+            }.padding().foregroundColor(.white)
+                .buttonStyle(PlainButtonStyle())
+                .background(Color.blue)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(self.positionsObservableObject.calculating)
         }
         .padding([.leading, .trailing], 10)
         .onAppear(perform: {
@@ -191,8 +205,7 @@ struct PositionsView: View {
                         return
                     }
                     self.isOpen = value.translation.height < 0
-                }
-                )
+                })
             }
         }
     }

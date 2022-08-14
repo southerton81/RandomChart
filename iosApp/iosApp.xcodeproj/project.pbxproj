@@ -15,6 +15,8 @@
 		7555FF8B242A565B00829871 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7555FF89242A565B00829871 /* LaunchScreen.storyboard */; };
 		7555FF96242A565B00829871 /* iosAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF95242A565B00829871 /* iosAppTests.swift */; };
 		7555FFA1242A565B00829871 /* iosAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FFA0242A565B00829871 /* iosAppUITests.swift */; };
+		9A1B1CCD28A2C72900DF555D /* LeaderboardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B1CCC28A2C72900DF555D /* LeaderboardMapper.swift */; };
+		9A1B1CCF28A2C81E00DF555D /* LeaderboardUiModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A1B1CCE28A2C81E00DF555D /* LeaderboardUiModels.swift */; };
 		9A4C4767279C8DF5006F002E /* Data.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 9A4C4765279C8DF5006F002E /* Data.xcdatamodeld */; };
 		9A4C4769279D9A8B006F002E /* PositionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4C4768279D9A8B006F002E /* PositionsView.swift */; };
 		9A4C476B279DA56C006F002E /* PersistentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4C476A279DA56C006F002E /* PersistentContainer.swift */; };
@@ -24,9 +26,11 @@
 		9A60CB80272B2136004C2726 /* ChartObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A60CB7F272B2136004C2726 /* ChartObservableObject.swift */; };
 		9A6AC99728A15ED100FE98E1 /* URLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6AC99628A15ED000FE98E1 /* URLSession.swift */; };
 		9A71CB5A2870F29800A34D98 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A71CB592870F29800A34D98 /* MainTabView.swift */; };
-		9A8A623B27A484C0002C4967 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8A623A27A484C0002C4967 /* Utils.swift */; };
+		9A8A623B27A484C0002C4967 /* PriceUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8A623A27A484C0002C4967 /* PriceUtils.swift */; };
 		9A8A623D27A5D6C3002C4967 /* PositionsObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8A623C27A5D6C3002C4967 /* PositionsObservableObject.swift */; };
+		9A8ED6D628A3B659008E8C2D /* LeaderboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8ED6D528A3B659008E8C2D /* LeaderboardModels.swift */; };
 		9A9045BC288B1E8B005814BC /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A9045BB288B1E8B005814BC /* Keychain.swift */; };
+		9A92F00828A92CE30025FDBB /* PositionsCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A92F00728A92CE30025FDBB /* PositionsCalculator.swift */; };
 		9ABEFEB12858AD7700F8EF80 /* UiPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB02858AD7700F8EF80 /* UiPosition.swift */; };
 		9ABEFEB32858ADAA00F8EF80 /* UiActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB22858ADAA00F8EF80 /* UiActionButton.swift */; };
 		9ABEFEB52858B1AD00F8EF80 /* PositionsMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB42858B1AD00F8EF80 /* PositionsMapper.swift */; };
@@ -64,6 +68,8 @@
 		7555FF9C242A565B00829871 /* iosAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iosAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FFA0242A565B00829871 /* iosAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosAppUITests.swift; sourceTree = "<group>"; };
 		7555FFA2242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9A1B1CCC28A2C72900DF555D /* LeaderboardMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardMapper.swift; sourceTree = "<group>"; };
+		9A1B1CCE28A2C81E00DF555D /* LeaderboardUiModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardUiModels.swift; sourceTree = "<group>"; };
 		9A4C4766279C8DF5006F002E /* Data.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Data.xcdatamodel; sourceTree = "<group>"; };
 		9A4C4768279D9A8B006F002E /* PositionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsView.swift; sourceTree = "<group>"; };
 		9A4C476A279DA56C006F002E /* PersistentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistentContainer.swift; sourceTree = "<group>"; };
@@ -73,9 +79,11 @@
 		9A60CB7F272B2136004C2726 /* ChartObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartObservableObject.swift; sourceTree = "<group>"; };
 		9A6AC99628A15ED000FE98E1 /* URLSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSession.swift; sourceTree = "<group>"; };
 		9A71CB592870F29800A34D98 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
-		9A8A623A27A484C0002C4967 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		9A8A623A27A484C0002C4967 /* PriceUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceUtils.swift; sourceTree = "<group>"; };
 		9A8A623C27A5D6C3002C4967 /* PositionsObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsObservableObject.swift; sourceTree = "<group>"; };
+		9A8ED6D528A3B659008E8C2D /* LeaderboardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardModels.swift; sourceTree = "<group>"; };
 		9A9045BB288B1E8B005814BC /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		9A92F00728A92CE30025FDBB /* PositionsCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsCalculator.swift; sourceTree = "<group>"; };
 		9ABEFEB02858AD7700F8EF80 /* UiPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiPosition.swift; sourceTree = "<group>"; };
 		9ABEFEB22858ADAA00F8EF80 /* UiActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiActionButton.swift; sourceTree = "<group>"; };
 		9ABEFEB42858B1AD00F8EF80 /* PositionsMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsMapper.swift; sourceTree = "<group>"; };
@@ -130,6 +138,7 @@
 		7555FF7D242A565900829871 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				9A92F00628A92AD10025FDBB /* common */,
 				9A5A68132886EBD9009323C2 /* leaderboard */,
 				9A4C476A279DA56C006F002E /* PersistentContainer.swift */,
 				9AD139D327B3E0B500D9AA8C /* chart */,
@@ -141,11 +150,7 @@
 				7555FF8C242A565B00829871 /* Info.plist */,
 				7555FF86242A565B00829871 /* Preview Content */,
 				9A4C4765279C8DF5006F002E /* Data.xcdatamodeld */,
-				9A8A623A27A484C0002C4967 /* Utils.swift */,
 				9A71CB592870F29800A34D98 /* MainTabView.swift */,
-				9A5F8C59288860C8003DCC31 /* Snackbar.swift */,
-				9A9045BB288B1E8B005814BC /* Keychain.swift */,
-				9A6AC99628A15ED000FE98E1 /* URLSession.swift */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -186,10 +191,33 @@
 		9A5A68132886EBD9009323C2 /* leaderboard */ = {
 			isa = PBXGroup;
 			children = (
+				9A8ED6D728A3B686008E8C2D /* models */,
 				9A5A68142886ECF3009323C2 /* LeaderboardView.swift */,
 				9A5A68162886F70D009323C2 /* LeadersObservableObject.swift */,
+				9A1B1CCC28A2C72900DF555D /* LeaderboardMapper.swift */,
 			);
 			path = leaderboard;
+			sourceTree = "<group>";
+		};
+		9A8ED6D728A3B686008E8C2D /* models */ = {
+			isa = PBXGroup;
+			children = (
+				9A8ED6D528A3B659008E8C2D /* LeaderboardModels.swift */,
+				9A1B1CCE28A2C81E00DF555D /* LeaderboardUiModels.swift */,
+			);
+			path = models;
+			sourceTree = "<group>";
+		};
+		9A92F00628A92AD10025FDBB /* common */ = {
+			isa = PBXGroup;
+			children = (
+				9A9045BB288B1E8B005814BC /* Keychain.swift */,
+				9A5F8C59288860C8003DCC31 /* Snackbar.swift */,
+				9A6AC99628A15ED000FE98E1 /* URLSession.swift */,
+				9A8A623A27A484C0002C4967 /* PriceUtils.swift */,
+				9A92F00728A92CE30025FDBB /* PositionsCalculator.swift */,
+			);
+			path = common;
 			sourceTree = "<group>";
 		};
 		9ABEFEAF2858AD2E00F8EF80 /* uiModels */ = {
@@ -383,15 +411,19 @@
 				7555FF81242A565900829871 /* SceneDelegate.swift in Sources */,
 				9A5A68172886F70D009323C2 /* LeadersObservableObject.swift in Sources */,
 				9ABEFEB32858ADAA00F8EF80 /* UiActionButton.swift in Sources */,
+				9A1B1CCD28A2C72900DF555D /* LeaderboardMapper.swift in Sources */,
 				9A71CB5A2870F29800A34D98 /* MainTabView.swift in Sources */,
-				9A8A623B27A484C0002C4967 /* Utils.swift in Sources */,
+				9A8A623B27A484C0002C4967 /* PriceUtils.swift in Sources */,
 				9ABEFEB52858B1AD00F8EF80 /* PositionsMapper.swift in Sources */,
 				9A5A68152886ECF3009323C2 /* LeaderboardView.swift in Sources */,
+				9A8ED6D628A3B659008E8C2D /* LeaderboardModels.swift in Sources */,
 				9A4C4767279C8DF5006F002E /* Data.xcdatamodeld in Sources */,
+				9A92F00828A92CE30025FDBB /* PositionsCalculator.swift in Sources */,
 				9A6AC99728A15ED100FE98E1 /* URLSession.swift in Sources */,
 				7555FF83242A565900829871 /* ChartView.swift in Sources */,
 				9A5F8C5A288860C8003DCC31 /* Snackbar.swift in Sources */,
 				9A4C476B279DA56C006F002E /* PersistentContainer.swift in Sources */,
+				9A1B1CCF28A2C81E00DF555D /* LeaderboardUiModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -561,6 +593,7 @@
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				INFOPLIST_FILE = iosApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -586,6 +619,7 @@
 				ENABLE_PREVIEWS = YES;
 				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../shared/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)";
 				INFOPLIST_FILE = iosApp/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -609,7 +643,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = iosAppTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -630,7 +664,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = iosAppTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

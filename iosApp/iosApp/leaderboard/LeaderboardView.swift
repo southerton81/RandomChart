@@ -3,9 +3,14 @@ import SwiftUI
 import Combine
 
 struct LeaderboardView: View {
-    @ObservedObject var leadersObservableObject = LeadersObservableObject()
+    @StateObject var leadersObservableObject = LeadersObservableObject()
     @State private var username: String = ""
     let usernameMaxChars = 30
+    let container: PersistentContainer
+    
+    init(_ c: PersistentContainer) {
+        self.container = c 
+    }
     
     var body: some View {
         ZStack(alignment: .center) {
@@ -15,37 +20,25 @@ struct LeaderboardView: View {
                 Text("Leaderboard")
                 Spacer()
                 
-                List(self.leadersObservableObject.leaderboardUiModel.scores) { model in
-                    let backgroundColor = model.id % 2 == 0 ? Color(UIColor.secondarySystemBackground) : Color(UIColor.tertiarySystemBackground)
+                ScrollViewReader { proxy in
                     
-                    HStack {
-                        Text(model.userName)
-                        Spacer()
-                        Text(String(model.userScore))
-                    }.listRowBackground(backgroundColor)
-                    
-                }.listStyle(SidebarListStyle())
+                    VStack {
+                        List(self.leadersObservableObject.leaderboardUiModel.scores) { model in
+                            HStack {
+                                Text(model.userName)
+                                Spacer()
+                                Text(String(model.userScore))
+                            }.listRowBackground(model.backgroundColor).id(model.id)
+                            
+                        }.listStyle(SidebarListStyle())
+                            .onChange(of: leadersObservableObject.leaderboardUiModel.userScoreIndex, perform: { _ in
+                                proxy.scrollTo(Int64(self.leadersObservableObject.leaderboardUiModel.userScoreIndex))
+                            })
+                    }
+                }
                 
                 if self.leadersObservableObject.leaderboardUiModel.showSignupPrompt {
-                    VStack() {
-                        Text("Join Leaderboard")
-                        
-                        TextField("Nickname", text: $username)
-                            .onReceive(Just($username)) { _ in limitText(&username, usernameMaxChars) }
-                            .disableAutocorrection(true)
-                            .padding()
-                            .background(Color(.systemBackground))
-                        
-                        Button(action: {
-                            self.leadersObservableObject.onUserJoin(username)
-                        }) {
-                            Text("Join")
-                        }.padding([.horizontal], 20).padding([.vertical], 10).foregroundColor(.white).background(Color.blue)
-                            .clipShape(RoundedRectangle(cornerRadius: 18)).buttonStyle(PlainButtonStyle())
-                            .disabled(self.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                          
-                    }.padding([.horizontal], 20).padding([.vertical], 30).background(Color(.secondarySystemBackground))
-                        .overlay(Rectangle().frame(width: nil, height: 1, alignment: .top).foregroundColor(Color(.separator)), alignment: .top)
+                    joinPrompt
                 }
             }
             
@@ -55,8 +48,30 @@ struct LeaderboardView: View {
         }
         .snackbar(errorState: $leadersObservableObject.errorState)
         .onAppear(perform: {
-            self.leadersObservableObject.fetch()
+            self.leadersObservableObject.updateScores(self.container)
         })
+    }
+    
+    private var joinPrompt: some View {
+        VStack() {
+            Text("Join Leaderboard")
+            
+            TextField("Nickname", text: $username)
+                .onReceive(Just($username)) { _ in limitText(&username, usernameMaxChars) }
+                .disableAutocorrection(true)
+                .padding()
+                .background(Color(.systemBackground))
+            
+            Button(action: {
+                self.leadersObservableObject.onUserJoin(container, username)
+            }) {
+                Text("Join")
+            }.padding([.horizontal], 20).padding([.vertical], 10).foregroundColor(.white).background(Color.blue)
+                .clipShape(RoundedRectangle(cornerRadius: 18)).buttonStyle(PlainButtonStyle())
+                .disabled(self.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            
+        }.padding([.horizontal], 20).padding([.vertical], 30).background(Color(.secondarySystemBackground))
+            .overlay(Rectangle().frame(width: nil, height: 1, alignment: .top).foregroundColor(Color(.separator)), alignment: .top)
     }
     
     func limitText(_ text: inout String, _ limit: Int) {

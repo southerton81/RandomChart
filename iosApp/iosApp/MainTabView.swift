@@ -1,12 +1,14 @@
 import Foundation
 import SwiftUI
 
-struct MainTabView<Chart: View>: View {
+struct MainTabView<ChartView: View>: View {
     
-    let chartView: Chart
+    private let chartView: ChartView
+    private let leaderboardView: LeaderboardView
     
-    init(_ chartView: Chart) {
+    init(_ chartView: ChartView, _ leaderboardView: LeaderboardView) {
         self.chartView = chartView
+        self.leaderboardView = leaderboardView
     }
     
     var body: some View {
@@ -18,7 +20,7 @@ struct MainTabView<Chart: View>: View {
                 Image(systemName: "chart.bar.fill")
                 Text("Chart")
             }
-            LeaderboardView()
+            self.leaderboardView
                 .frame(
                     maxWidth: .infinity,
                     maxHeight: .infinity,

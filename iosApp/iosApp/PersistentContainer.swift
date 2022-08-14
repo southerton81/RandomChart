@@ -2,6 +2,8 @@ import Foundation
 import CoreData
 
 class PersistentContainer {
+    private var backgroundContext: NSManagedObjectContext?
+    
     var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Data")
         container.loadPersistentStores { _, error in
@@ -16,8 +18,14 @@ class PersistentContainer {
         return persistentContainer.viewContext
     }
     
-    func saveContext() {
-        let context = persistentContainer.viewContext
+    func sharedBackgroundContext() -> NSManagedObjectContext {
+        let newBackgroundContext = backgroundContext ?? persistentContainer.newBackgroundContext()
+        backgroundContext = newBackgroundContext
+        return newBackgroundContext
+    }
+    
+    
+    func saveContext(_ context: NSManagedObjectContext) {
         if context.hasChanges {
             do {
                 try context.save()
