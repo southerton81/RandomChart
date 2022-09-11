@@ -3,25 +3,35 @@ import CoreData
 
 struct PositionsView: View {
     let container: PersistentContainer
-    @StateObject var positionsObservableObject = PositionsObservableObject()
+    @StateObject var positionsObservableObject: PositionsObservableObject
     @ObservedObject var chartObservableObject: ChartObservableObject
     @State private var bottomSheetShown = false
     @State private var isSliding = false // Prevent BottomSheetView drag gesture from interacting with the Slider
     @State private var positionSizePct: Double = 20
     private var positionSizePctRange: ClosedRange<Double> = 1...100
+    private let nextCommand: NextCommand
+    private let longCommand: LongCommand
+    private let shortCommand: ShortCommand
+    private let closeCommand: ClosePositionCommand
     
     @FetchRequest(
         entity: Position.entity(),
         sortDescriptors: [
             NSSortDescriptor(keyPath: \Position.closed, ascending: true),
-            NSSortDescriptor(keyPath: \Position.endPeriod, ascending: false)
+            NSSortDescriptor(keyPath: \Position.endPeriod, ascending: false),
+            NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)
         ]
     )
     var positions: FetchedResults<Position>
     
-    init(_ c: PersistentContainer, _ chartObservable: ChartObservableObject) {
+    init(_ c: PersistentContainer, _ chartObservable: ChartObservableObject, _ positionsObservable: PositionsObservableObject = PositionsObservableObject()) {
         self.container = c
         self.chartObservableObject = chartObservable
+        self._positionsObservableObject = StateObject(wrappedValue: positionsObservable)
+        self.nextCommand = NextCommand(c, chartObservable, positionsObservable)
+        self.longCommand = LongCommand(c, chartObservable, positionsObservable)
+        self.shortCommand = ShortCommand(c, chartObservable, positionsObservable)
+        self.closeCommand = ClosePositionCommand(c, chartObservable, positionsObservable)
     }
     
     var body: some View {
@@ -29,18 +39,12 @@ struct PositionsView: View {
         GeometryReader { geometry in
             
             ZStack {
-                
                 VStack(spacing: 0) {
-                    if (positionsObservableObject.calculating == false) {
-                        Text("Total " + decimalToString(self.positionsObservableObject.totalCap, 0) + "$ Free " + decimalToString(self.positionsObservableObject.freeFunds, 0) + "$")
-                            .font(.footnote)
-                    }
-                    
-                    list
-                    
-                    buttons.background(Color(.secondarySystemBackground))
-                        .edgesIgnoringSafeArea(.all)
-                    
+                    Text("Total " + decimalPriceToString(self.positionsObservableObject.totalCap, 0) +
+                         "$ Free " + decimalPriceToString(self.positionsObservableObject.freeFunds, 0) + "$")
+                        .font(.footnote)
+                    positionsList
+                    buttons.background(Color(.secondarySystemBackground)).edgesIgnoringSafeArea(.all)
                     Spacer(minLength: 10)
                     
                 }.background(Color(.secondarySystemBackground))
@@ -52,7 +56,7 @@ struct PositionsView: View {
                 maxHeight: geometry.size.height * 0.5
             ) {
                 Text("Position size: " + String(format: "%.0f", self.positionSizePct) + "%")
-                Text(decimalToString(self.positionsObservableObject.recalculatePositionSize(self.positionSizePct), 0) + "$")
+                Text(decimalPriceToString(self.positionsObservableObject.recalculatePositionSize(self.positionSizePct), 0) + "$")
                 Slider(value: self.$positionSizePct, in: self.positionSizePctRange, step: 1) { _ in
                     self.isSliding = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -63,33 +67,25 @@ struct PositionsView: View {
         }
     }
     
-    var list: some View {
+    var positionsList: some View {
         List(self.positions
             .filter({ position in position.startPeriod > 0})
-            .map({ (position) -> UiPosition in
-                return mapToUiPosition(position, self.chartObservableObject.lastPriceCents())
-            }), id: \.self)
+            .map({ (position) -> UiPosition in return mapToUiPosition(position, self.chartObservableObject.currentPriceCents())}), id: \.self)
         { uiPosition in
-            
             HStack {
                 Text(uiPosition.titleText)
                 Spacer()
                 Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
                 Spacer()
                 Text(uiPosition.typeText)
-                
+              
                 if (uiPosition.action != nil) {
                     Spacer()
                     Button(action: {
-                        self.positionsObservableObject.close(self.container, uiPosition.corePosition, self.chartObservableObject.lastPriceCents(),
-                                                             Int32(self.chartObservableObject.lastPeriodIndex()))
+                        closeCommand.execute(uiPosition.id)
                     }) {
                         Text(uiPosition.action?.caption ?? "")
-                    }.padding(10).foregroundColor(.white)
-                        .buttonStyle(PlainButtonStyle())
-                        .background(Color.blue)
-                        .clipShape(RoundedRectangle(cornerRadius:18))
-                        .disabled(self.positionsObservableObject.calculating)
+                    }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius:18))
                 }
             }
         }.listStyle(SidebarListStyle())
@@ -97,56 +93,30 @@ struct PositionsView: View {
     
     var buttons: some View {
         HStack {
-            Button(action: {
-                self.bottomSheetShown = true
-            }) {
+            Button(action: { self.bottomSheetShown = true }) {
                 Text("Size: " + String(format: "%.0f", self.positionSizePct) + "%")
-            }.padding().foregroundColor(.white).background(Color.orange)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
+            }.padding().foregroundColor(.white).background(Color.orange).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Spacer()
             
             Button(action: {
-                self.positionsObservableObject.openNewPosition(self.container, self.chartObservableObject.lastPriceCents(),
-                                                               self.chartObservableObject.lastPeriodIndex(),
-                                                               isLongPosition: false)
-            }) {
-                Text("Short")
-            }.padding().foregroundColor(.white)
-                .buttonStyle(PlainButtonStyle())
-                .background(Color.red)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .disabled(!self.positionsObservableObject.canOpenNewPos)
+                shortCommand.execute()
+            }) { Text("Short") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color.red).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Button(action: {
-                self.positionsObservableObject.openNewPosition(self.container, self.chartObservableObject.lastPriceCents(),
-                                                               self.chartObservableObject.lastPeriodIndex(),
-                                                               isLongPosition: true)
-            }) {
-                Text("Long")
-            }.padding().foregroundColor(.white)
-                .buttonStyle(PlainButtonStyle())
-                .background(Color.green)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .disabled(!self.positionsObservableObject.canOpenNewPos)
+                longCommand.execute()
+            }) { Text("Long") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.green).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Button(action: {
-                currentOffset = self.chartObservableObject.next(currentOffset)
-                self.positionsObservableObject.recalculatePositionSize(self.positionSizePct)
-                self.positionsObservableObject.recalculateFunds(self.container, self.chartObservableObject.lastPriceCents())
-                self.chartObservableObject.saveChartState(self.container)
-            }) {
-                Text("Next")
-            }.padding().foregroundColor(.white)
-                .buttonStyle(PlainButtonStyle())
-                .background(Color.blue)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .disabled(self.positionsObservableObject.calculating)
+                nextCommand.execute(self.positionSizePct)
+            }) { Text("Next") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 20))
         }
         .padding([.leading, .trailing], 10)
         .onAppear(perform: {
-            self.positionsObservableObject.recalculateFunds(self.container, self.chartObservableObject.lastPriceCents())
-            self.positionsObservableObject.recalculatePositionSize(self.positionSizePct)
+            self.positionsObservableObject.createStartingFundsPosition(self.container, {
+                self.positionsObservableObject.recalculateFunds(self.container, self.chartObservableObject.currentPriceCents())
+                self.positionsObservableObject.recalculatePositionSize(self.positionSizePct)
+            })
         })
     }
     

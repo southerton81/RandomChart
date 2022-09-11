@@ -1,6 +1,6 @@
 import Foundation
 
-public func formatPrice(_ price: Int64) -> String {
+public func int64PriceToString(_ price: Int64) -> String {
     var s = String(price)
     if (s.count > 2) {
         s.insert(".", at: s.index(s.endIndex, offsetBy: -2))
@@ -12,7 +12,7 @@ public func formatPrice(_ price: Int64) -> String {
     return s
 }
 
-public func decimalToString(_ value: NSDecimalNumber, _ minimumFractionDigits: Int = 2, showSign: Bool = false) -> String {
+public func decimalPriceToString(_ value: NSDecimalNumber, _ minimumFractionDigits: Int = 2, showSign: Bool = false) -> String {
     let fmt = NumberFormatter()
     fmt.numberStyle = .none
     fmt.minimumFractionDigits = minimumFractionDigits
@@ -22,28 +22,22 @@ public func decimalToString(_ value: NSDecimalNumber, _ minimumFractionDigits: I
         fmt.positivePrefix = fmt.plusSign
     }
     return fmt.string(from: value) ?? "0.00"
-}
+} 
 
-public func getPercentDiff(value1: NSDecimalNumber, value2: NSDecimalNumber, negative: Bool) -> NSDecimalNumber {
+public func getPercentDiff(_ value1: NSDecimalNumber, _ value2: NSDecimalNumber) -> NSDecimalNumber {
     let diff = value2.subtracting(value1)
     let pct = value1.dividing(by: NSDecimalNumber(integerLiteral: 100))
-    let result = diff.dividing(by: pct)
-    return negative ? NSDecimalNumber.zero.subtracting(result) : result
+    return diff.dividing(by: pct)
 }
 
-extension NSDecimalNumber {
-    public func floorToInt64() -> Int64 {
-        let roundingBehavior = NSDecimalNumberHandler(roundingMode: .down,
-                                                      scale: 0,
-                                                      raiseOnExactness: true,
-                                                      raiseOnOverflow: true,
-                                                      raiseOnUnderflow: true,
-                                                      raiseOnDivideByZero: true)
-        let rounded = rounding(accordingToBehavior: roundingBehavior)
-        return rounded.int64Value
+public func getPositionResultInPct(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {
+    var positionValue = NSDecimalNumber.zero
+    if (p.closed) {
+        positionValue = calculateClosedPostionValue(p)
+    } else {
+        positionValue = calculateOpenPositionValue(currentPriceCents, p)
     }
+    return getPercentDiff(p.totalSpent ?? NSDecimalNumber.zero, positionValue)
 }
-
-
 
 

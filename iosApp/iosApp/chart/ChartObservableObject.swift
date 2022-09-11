@@ -23,7 +23,7 @@ class ChartObservableObject: ObservableObject {
     private var periods: Array<PeriodDto>
     private var seed: Int32
     
-    init(_ chartLen: Int32 = 200, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 100, _ startPrice: Int64 = 5000) {
+    init(_ chartLen: Int32 = 1500, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) {
         self.chartLenScreen = chartLenScreen
         self.rand = Rand(seed: seed)
         self.seed = seed
@@ -67,21 +67,27 @@ class ChartObservableObject: ObservableObject {
             let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: nextPeriod, w: self.width)
             generatePeriodsRects(newOffset, self.width, self.height)
             
-            description = "Close: $\(formatPrice(nextPeriod.close))"
+            description = "Close: $\(int64PriceToString(nextPeriod.close))"
             
             return CGFloat(newOffset)
         }
         return defaultOffset
     }
     
-    func saveChartState(_ c: PersistentContainer) {
-        let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
-        if let chartStates = try? c.context().fetch(fetchRequest) {
-            let chartState = (chartStates.isEmpty) ? ChartState(context: c.context()) : chartStates[0]
-            chartState.seed = self.seed
-            chartState.chartLen = Int32(periods.count - 1)
-            c.saveContext(c.context())
-        }
+    func saveChartState(_ c: PersistentContainer, _ actionAfterSave: @escaping () -> Void) {
+        c.saveContext(block: { c in
+            do {
+                let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
+                let chartStates = try fetchRequest.execute()
+                
+                let chartState = (chartStates.isEmpty) ? ChartState(context: c) : chartStates[0]
+                chartState.seed = self.seed
+                chartState.chartLen = Int32(self.periods.count - 1)
+                
+            } catch let error {
+                print(error.localizedDescription)
+            }
+        }, actionAfterSave)
     }
     
     func selectPeriod(x: Float) {
@@ -102,12 +108,12 @@ class ChartObservableObject: ObservableObject {
             if (s.count > 2) {
                 s.insert(".", at: s.index(s.endIndex, offsetBy: -2))
             }
-            description = "High: $\(formatPrice(periodDto.high)) Low: $\(formatPrice(periodDto.low))" +
-            " -- Open: $\(formatPrice(periodDto.open)) Close: $\(formatPrice(periodDto.close))"
+            description = "High: $\(int64PriceToString(periodDto.high)) Low: $\(int64PriceToString(periodDto.low))" +
+            " -- Open: $\(int64PriceToString(periodDto.open)) Close: $\(int64PriceToString(periodDto.close))"
         }
     }
     
-    func lastPriceCents() -> Int64 { 
+    func currentPriceCents() -> Int64 { 
         return periods[periods.count - 1].close
     }
     

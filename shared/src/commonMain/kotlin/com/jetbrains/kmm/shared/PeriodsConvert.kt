@@ -46,7 +46,7 @@ fun convertToScreen(
     }
 
     val priceRange = yMax - yMin
-    val pixelPrice = h / (priceRange + (priceRange / 10))
+    val pixelPrice = h / priceRange
 
     val screenPeriods = screenSlice.mapIndexed { i, periodDto ->
         val topPrice = periodDto.high - yMin

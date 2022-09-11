@@ -57,8 +57,7 @@ class LeadersObservableObject: ObservableObject {
     }
     
     func updateScores(_ c: PersistentContainer) {
-        self.leaderboardUiModel = LeaderboardUiModel(
-                                                     scores: leaderboardUiModel.scores,
+        self.leaderboardUiModel = LeaderboardUiModel(scores: leaderboardUiModel.scores,
                                                      userScoreIndex: leaderboardUiModel.userScoreIndex,
                                                      showSignupPrompt: false, showProgress: true)
         Task {
@@ -73,7 +72,6 @@ class LeadersObservableObject: ObservableObject {
                 await MainActor.run {
                     self.leaderboardUiModel = leaderboardUiModel
                 }
-                
             } catch {
                 await MainActor.run {
                     self.errorState.title = "Could not connect to server"

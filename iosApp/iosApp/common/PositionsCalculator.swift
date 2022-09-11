@@ -5,8 +5,8 @@ func calculateClosedPostionValue(_ p: Position) -> NSDecimalNumber {
         if (!p.long) {
             if let closedPositionValue = p.quantity?.multiplying(by: endPrice) {
                 if let openPositionValue = p.quantity?.multiplying(by: startPrice) {
-                    let shortPositionResult = openPositionValue.adding(openPositionValue.subtracting(closedPositionValue))
-                    return shortPositionResult
+                    let closedShortPositionValue = openPositionValue.adding(openPositionValue.subtracting(closedPositionValue))
+                    return closedShortPositionValue
                 }
             }
         } else {
@@ -18,15 +18,15 @@ func calculateClosedPostionValue(_ p: Position) -> NSDecimalNumber {
     return NSDecimalNumber.zero
 }
 
-func calculateOpenPositionCurrentValue(_ currentPriceCent: Int64, _ p: Position) -> NSDecimalNumber {
+func calculateOpenPositionValue(_ currentPriceCent: Int64, _ p: Position) -> NSDecimalNumber {
     let currentPriceDollar = NSDecimalNumber(value: currentPriceCent).dividing(by: NSDecimalNumber(100))
     
     if (!p.long) {
         if let quantity = p.quantity {
             let positionCurrentValue = quantity.multiplying(by: currentPriceDollar)
             let positionOpenValue = quantity.multiplying(by: p.startPrice ?? 0)
-            let shortPositionOpenResult = positionOpenValue.adding(positionOpenValue.subtracting(positionCurrentValue))
-            return shortPositionOpenResult
+            let shortPositionCurrentValue = positionOpenValue.adding(positionOpenValue.subtracting(positionCurrentValue))
+            return shortPositionCurrentValue
         }
     } else {
         if let positionCurrentValue = p.quantity?.multiplying(by: currentPriceDollar) {

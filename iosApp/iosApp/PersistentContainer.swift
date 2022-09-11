@@ -3,6 +3,11 @@ import CoreData
 
 class PersistentContainer {
     private var backgroundContext: NSManagedObjectContext?
+    private let persistentContainerQueue = OperationQueue()
+    
+    init() {
+        persistentContainerQueue.maxConcurrentOperationCount = 1
+    }
     
     var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "Data")
@@ -15,6 +20,7 @@ class PersistentContainer {
     }()
     
     func context() -> NSManagedObjectContext {
+        persistentContainer.viewContext.automaticallyMergesChangesFromParent = true
         return persistentContainer.viewContext
     }
     
@@ -24,14 +30,24 @@ class PersistentContainer {
         return newBackgroundContext
     }
     
-    
-    func saveContext(_ context: NSManagedObjectContext) {
-        if context.hasChanges {
-            do {
-                try context.save()
-            } catch {
-                let nserror = error as NSError
-                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+    func saveContext(block: @escaping (_ context: NSManagedObjectContext) -> Void, _ actionAfterSave: @escaping () -> Void = {}) {
+        let context = sharedBackgroundContext()
+        persistentContainerQueue.addOperation() {
+            context.performAndWait {
+                do {
+                    block(context)
+                    
+                    if (context.hasChanges) {
+                        try context.save()
+                    }
+                    
+                    DispatchQueue.main.async {
+                        actionAfterSave()
+                    }
+                } catch {
+                    let nsError = error as NSError
+                    fatalError("saveContext() error: \(nsError), \(nsError.userInfo)")
+                }
             }
         }
     }
