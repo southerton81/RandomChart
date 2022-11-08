@@ -17,27 +17,10 @@ public func decimalPriceToString(_ value: NSDecimalNumber, _ minimumFractionDigi
     fmt.numberStyle = .none
     fmt.minimumFractionDigits = minimumFractionDigits
     fmt.minimumIntegerDigits = 1
-    fmt.roundingMode = .halfUp
+    fmt.roundingMode = .halfDown
     if (showSign) {
         fmt.positivePrefix = fmt.plusSign
     }
     return fmt.string(from: value) ?? "0.00"
-} 
-
-public func getPercentDiff(_ value1: NSDecimalNumber, _ value2: NSDecimalNumber) -> NSDecimalNumber {
-    let diff = value2.subtracting(value1)
-    let pct = value1.dividing(by: NSDecimalNumber(integerLiteral: 100))
-    return diff.dividing(by: pct)
 }
-
-public func getPositionResultInPct(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {
-    var positionValue = NSDecimalNumber.zero
-    if (p.closed) {
-        positionValue = calculateClosedPostionValue(p)
-    } else {
-        positionValue = calculateOpenPositionValue(currentPriceCents, p)
-    }
-    return getPercentDiff(p.totalSpent ?? NSDecimalNumber.zero, positionValue)
-}
-
 

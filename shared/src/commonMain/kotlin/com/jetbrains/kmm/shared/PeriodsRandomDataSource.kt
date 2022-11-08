@@ -19,13 +19,20 @@ fun getRandomAvailablePeriods(
     indexFrom: Int = 0,
     basePrice: Long = 5000 // Base price to keep fluctuations in same range
 ): List<PeriodDto> {
+
+
+    for (i in 33 downTo  0) {
+
+
+    }
+
     var price = startPrice
     var gaussian = Gaussian()
     return (0 until count).map {
         val high = price + randomChangeByPercent(basePrice, rand.random, gaussian, rand.random.nextDouble(0.0, 5.0))
         val low = price - randomChangeByPercent(basePrice, rand.random, gaussian, rand.random.nextDouble(0.0, 5.0))
         val open = price
-        val close = rand.random.nextLong(low, high + 1)
+        val close = price//rand.random.nextLong(low, high + 1)
         price = close
 
         PeriodDto(

@@ -2,7 +2,7 @@ import Foundation
 
 @available(iOS, deprecated: 15.0, message: "Use the built-in API instead")
 extension URLSession {
-    func data(from url: URL, httpMethod: String = "GET", body: [String: Any] = [:],
+    func request(from url: URL, httpMethod: String = "GET", body: [String: Any] = [:],
               authorizationToken: String? = nil) async throws -> (Data, URLResponse) {
         try await withCheckedThrowingContinuation { continuation in
             

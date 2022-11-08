@@ -2,7 +2,6 @@ import Foundation
 import SwiftUI
 
 struct MainTabView<ChartView: View>: View {
-    
     private let chartView: ChartView
     private let leaderboardView: LeaderboardView
     
@@ -43,5 +42,4 @@ struct MainTabView<ChartView: View>: View {
             }
         }
     }
-    
 }

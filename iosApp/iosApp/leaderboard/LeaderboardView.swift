@@ -3,13 +3,14 @@ import SwiftUI
 import Combine
 
 struct LeaderboardView: View {
-    @StateObject var leadersObservableObject = LeadersObservableObject()
+    @EnvironmentObject var chartObservable: ChartObservableObject
+    @StateObject var leadersObservable = LeadersObservableObject()
     @State private var username: String = ""
     let usernameMaxChars = 30
-    let container: PersistentContainer
+    let container: CoreDataInventory
     
-    init(_ c: PersistentContainer) {
-        self.container = c 
+    init(_ c: CoreDataInventory) {
+        self.container = c
     }
     
     var body: some View {
@@ -23,7 +24,7 @@ struct LeaderboardView: View {
                 ScrollViewReader { proxy in
                     
                     VStack {
-                        List(self.leadersObservableObject.leaderboardUiModel.scores) { model in
+                        List(self.leadersObservable.leaderboardUiModel.scores) { model in
                             HStack {
                                 Text(model.userName)
                                 Spacer()
@@ -31,24 +32,24 @@ struct LeaderboardView: View {
                             }.listRowBackground(model.backgroundColor).id(model.id)
                             
                         }.listStyle(SidebarListStyle())
-                            .onChange(of: leadersObservableObject.leaderboardUiModel.userScoreIndex, perform: { _ in
-                                proxy.scrollTo(Int64(self.leadersObservableObject.leaderboardUiModel.userScoreIndex))
+                            .onChange(of: leadersObservable.leaderboardUiModel.userScoreIndex, perform: { _ in
+                                proxy.scrollTo(Int64(self.leadersObservable.leaderboardUiModel.userScoreIndex))
                             })
                     }
                 }
                 
-                if self.leadersObservableObject.leaderboardUiModel.showSignupPrompt {
+                if self.leadersObservable.leaderboardUiModel.showSignupPrompt {
                     joinPrompt
                 }
             }
             
-            if self.leadersObservableObject.leaderboardUiModel.showProgress {
+            if self.leadersObservable.leaderboardUiModel.showProgress {
                 ProgressView()
             }
         }
-        .snackbar(errorState: $leadersObservableObject.errorState)
+        .snackbar(errorState: $leadersObservable.errorState)
         .onAppear(perform: {
-            self.leadersObservableObject.updateScores(self.container)
+            self.leadersObservable.updateScores(self.container, self.chartObservable.currentPriceCents())
         })
     }
     
@@ -63,7 +64,7 @@ struct LeaderboardView: View {
                 .background(Color(.systemBackground))
             
             Button(action: {
-                self.leadersObservableObject.onUserJoin(container, username)
+                self.leadersObservable.onUserJoin(container, username, self.chartObservable.currentPriceCents())
             }) {
                 Text("Join")
             }.padding([.horizontal], 20).padding([.vertical], 10).foregroundColor(.white).background(Color.blue)

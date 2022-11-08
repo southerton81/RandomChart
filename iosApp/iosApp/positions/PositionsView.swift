@@ -2,9 +2,8 @@ import SwiftUI
 import CoreData
 
 struct PositionsView: View {
-    let container: PersistentContainer
-    @StateObject var positionsObservableObject: PositionsObservableObject
-    @ObservedObject var chartObservableObject: ChartObservableObject
+    @EnvironmentObject var positionsObservable: PositionsObservableObject
+    @EnvironmentObject var chartObservable: ChartObservableObject
     @State private var bottomSheetShown = false
     @State private var isSliding = false // Prevent BottomSheetView drag gesture from interacting with the Slider
     @State private var positionSizePct: Double = 20
@@ -13,7 +12,7 @@ struct PositionsView: View {
     private let longCommand: LongCommand
     private let shortCommand: ShortCommand
     private let closeCommand: ClosePositionCommand
-    
+
     @FetchRequest(
         entity: Position.entity(),
         sortDescriptors: [
@@ -24,14 +23,11 @@ struct PositionsView: View {
     )
     var positions: FetchedResults<Position>
     
-    init(_ c: PersistentContainer, _ chartObservable: ChartObservableObject, _ positionsObservable: PositionsObservableObject = PositionsObservableObject()) {
-        self.container = c
-        self.chartObservableObject = chartObservable
-        self._positionsObservableObject = StateObject(wrappedValue: positionsObservable)
-        self.nextCommand = NextCommand(c, chartObservable, positionsObservable)
-        self.longCommand = LongCommand(c, chartObservable, positionsObservable)
-        self.shortCommand = ShortCommand(c, chartObservable, positionsObservable)
-        self.closeCommand = ClosePositionCommand(c, chartObservable, positionsObservable)
+    init() {
+        self.nextCommand = NextCommand()
+        self.longCommand = LongCommand()
+        self.shortCommand = ShortCommand()
+        self.closeCommand = ClosePositionCommand()
     }
     
     var body: some View {
@@ -40,10 +36,10 @@ struct PositionsView: View {
             
             ZStack {
                 VStack(spacing: 0) {
-                    Text("Total " + decimalPriceToString(self.positionsObservableObject.totalCap, 0) +
-                         "$ Free " + decimalPriceToString(self.positionsObservableObject.freeFunds, 0) + "$")
+                    Text("Total " + decimalPriceToString(self.positionsObservable.totalCap, 0) +
+                         "$ Free " + decimalPriceToString(self.positionsObservable.freeFunds, 0) + "$")
                         .font(.footnote)
-                    positionsList
+                    positionsList.animation(nil)
                     buttons.background(Color(.secondarySystemBackground)).edgesIgnoringSafeArea(.all)
                     Spacer(minLength: 10)
                     
@@ -56,7 +52,7 @@ struct PositionsView: View {
                 maxHeight: geometry.size.height * 0.5
             ) {
                 Text("Position size: " + String(format: "%.0f", self.positionSizePct) + "%")
-                Text(decimalPriceToString(self.positionsObservableObject.recalculatePositionSize(self.positionSizePct), 0) + "$")
+                Text(decimalPriceToString(self.positionsObservable.recalculatePositionSize(self.positionSizePct), 0) + "$")
                 Slider(value: self.$positionSizePct, in: self.positionSizePctRange, step: 1) { _ in
                     self.isSliding = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -69,8 +65,8 @@ struct PositionsView: View {
     
     var positionsList: some View {
         List(self.positions
-            .filter({ position in position.startPeriod > 0})
-            .map({ (position) -> UiPosition in return mapToUiPosition(position, self.chartObservableObject.currentPriceCents())}), id: \.self)
+            .filter({ position in position.startPeriod > 0}) // Dont show checkpoint positions
+            .map({ (position) -> UiPosition in mapToUiPosition(position, self.chartObservable.currentPriceCents())}), id: \.self)
         { uiPosition in
             HStack {
                 Text(uiPosition.titleText)
@@ -82,7 +78,7 @@ struct PositionsView: View {
                 if (uiPosition.action != nil) {
                     Spacer()
                     Button(action: {
-                        closeCommand.execute(uiPosition.id)
+                        closeCommand.execute(positionsObservable, chartObservable, uiPosition.id)
                     }) {
                         Text(uiPosition.action?.caption ?? "")
                     }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius:18))
@@ -100,24 +96,32 @@ struct PositionsView: View {
             Spacer()
             
             Button(action: {
-                shortCommand.execute()
+                shortCommand.execute(positionsObservable, chartObservable)
             }) { Text("Short") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color.red).clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(!self.positionsObservable.canOpenNewPos)
             
             Button(action: {
-                longCommand.execute()
+                longCommand.execute(positionsObservable, chartObservable)
             }) { Text("Long") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.green).clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(!self.positionsObservable.canOpenNewPos)
             
             Button(action: {
-                nextCommand.execute(self.positionSizePct)
-            }) { Text("Next") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius: 20))
+                nextCommand.execute(positionsObservable, chartObservable, positionSizePct)
+            }) { Text("Next") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color("NextButtonBckgndColor")).clipShape(RoundedRectangle(cornerRadius: 20))
         }
         .padding([.leading, .trailing], 10)
         .onAppear(perform: {
-            self.positionsObservableObject.createStartingFundsPosition(self.container, {
-                self.positionsObservableObject.recalculateFunds(self.container, self.chartObservableObject.currentPriceCents())
-                self.positionsObservableObject.recalculatePositionSize(self.positionSizePct)
-            })
-        })
+            Task {
+                await self.positionsObservable.ensureStartPosition(startPrice: NSDecimalNumber(decimal: 0), endPrice: Constants.startFunds)
+                let currentPeriod = self.chartObservable.currentPeriod()
+                await self.positionsObservable.recalculateFunds(currentPeriod)
+                await MainActor.run {
+                    self.positionsObservable.recalculatePositionSize(self.positionSizePct)
+                    self.positionsObservable.checkEndSessionCondition(currentPeriod)
+                }
+            }
+        }
+        )
     }
     
     struct BottomSheetView<Content: View>: View {
@@ -135,11 +139,11 @@ struct PositionsView: View {
         }
         
         private var indicator: some View {
-            RoundedRectangle(cornerRadius: Constants.radius)
+            RoundedRectangle(cornerRadius: BottomSheetConstants.radius)
                 .fill(Color.secondary)
                 .frame(
-                    width: Constants.indicatorWidth,
-                    height: Constants.indicatorHeight
+                    width: BottomSheetConstants.indicatorWidth,
+                    height: BottomSheetConstants.indicatorHeight
                 ).onTapGesture {
                     self.isOpen.toggle()
                 }
@@ -160,17 +164,17 @@ struct PositionsView: View {
                     self.content
                 }
                 .frame(width: geometry.size.width, height: self.maxHeight, alignment: .top)
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(Constants.radius)
+                .background(Color(.tertiarySystemBackground))
+                .cornerRadius(BottomSheetConstants.radius)
                 .frame(height: geometry.size.height, alignment: .bottom)
                 .offset(y: max(self.offset + self.translation, 0))
                 .animation(.interactiveSpring())
-                .padding(.bottom, -Constants.radius * 2)
+                .padding(.bottom, -BottomSheetConstants.radius * 2)
                 .simultaneousGesture(self.isSliding == true ? nil :
                                         DragGesture().updating(self.$translation) { value, state, _ in
                     state = value.translation.height
                 }.onEnded { value in
-                    let snapDistance = self.maxHeight * Constants.snapRatio
+                    let snapDistance = self.maxHeight * BottomSheetConstants.snapRatio
                     guard abs(value.translation.height) > snapDistance else {
                         return
                     }
@@ -180,8 +184,8 @@ struct PositionsView: View {
         }
     }
     
-    fileprivate enum Constants {
-        static let radius: CGFloat = 8
+    fileprivate enum BottomSheetConstants {
+        static let radius: CGFloat = 16
         static let indicatorHeight: CGFloat = 4
         static let indicatorWidth: CGFloat = 60
         static let snapRatio: CGFloat = 0.25

@@ -3,6 +3,22 @@ import shared
 import SwiftUI
 import CoreData
 
+class Period {
+    let index: Int64
+    let high: Int64
+    let low: Int64
+    let open: Int64
+    let close: Int64
+    
+    init(index: Int64, high: Int64, low: Int64, open: Int64, close: Int64) {
+        self.index = index
+        self.high = high
+        self.low = low
+        self.open = open
+        self.close = close
+    }
+}
+
 class ChartObservableObject: ObservableObject {
     @Published var upPeriods = Array<CGRect>()
     @Published var downPeriods = Array<CGRect>()
@@ -12,29 +28,48 @@ class ChartObservableObject: ObservableObject {
     
     var offsetLimitRange = 0..<Int.max
     
-    private var chartLenScreen: Int32
-    private var rand: Rand
-    private let startPrice: Int64
-    
+    private var chartLenScreen: Int32 = 0
+    private var rand: Rand = Rand(seed: 0)
+    private var startPrice: Int64 = 0
     private var zoomToPeriod: PeriodDto?
     private var width: Float = 0
     private var height: Float = 0
     private var screenPeriods: Array<PeriodScreen> = Array()
-    private var periods: Array<PeriodDto>
-    private var seed: Int32
+    private var periods: Array<PeriodDto> = Array()
+    private var seed: Int32 = 0
+    private let c: CoreDataInventory
+
+    init(_ c: CoreDataInventory) {
+        self.c = c
+    }
     
-    init(_ chartLen: Int32 = 1500, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) {
+    func reset(_ chartLen: Int32 = 10, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) {
         self.chartLenScreen = chartLenScreen
         self.rand = Rand(seed: seed)
         self.seed = seed
-        
         self.startPrice = startPrice
         self.periods = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: startPrice, rand: rand, count: chartLen, indexFrom: 0, basePrice: startPrice)
     }
     
+    func restore() {
+        let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
+        if let chartStates = try? c.viewContext.fetch(fetchRequest) {
+            if (!chartStates.isEmpty) {
+                let chartState = chartStates[0]
+                reset(chartState.chartLen, chartState.seed)
+                return
+            }
+        }
+        reset()
+    }
+    
+    func isChartEmpty() -> Bool {
+        return screenPeriods.isEmpty
+    }
+    
     func generatePeriodsRects(_ offset: Float, _ width: Float, _ height: Float) {
         screenPeriods = PeriodsConvertKt.convertToScreen(allPeriods: periods, periodsOnScreen: chartLenScreen, offset: offset, w: width, h: height)
-          
+        
         if (screenPeriods.count < chartLenScreen / 2) {
             offsetLimitRange = 0..<Int(offset)
         } else {
@@ -74,20 +109,18 @@ class ChartObservableObject: ObservableObject {
         return defaultOffset
     }
     
-    func saveChartState(_ c: PersistentContainer, _ actionAfterSave: @escaping () -> Void) {
-        c.saveContext(block: { c in
+    func saveChartState() async {
+        await c.perform(block: { c in
             do {
                 let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
                 let chartStates = try fetchRequest.execute()
-                
                 let chartState = (chartStates.isEmpty) ? ChartState(context: c) : chartStates[0]
                 chartState.seed = self.seed
                 chartState.chartLen = Int32(self.periods.count - 1)
-                
             } catch let error {
                 print(error.localizedDescription)
             }
-        }, actionAfterSave)
+        })
     }
     
     func selectPeriod(x: Float) {
@@ -113,11 +146,16 @@ class ChartObservableObject: ObservableObject {
         }
     }
     
-    func currentPriceCents() -> Int64 { 
-        return periods[periods.count - 1].close
+    func currentPriceCents() -> Int64 {
+        return periods.last?.close ?? 0
     }
     
-    func lastPeriodIndex() -> Int32 {
+    func currentPeriod() -> Period {
+        let period = periods[periods.count - 1]
+        return Period(index: Int64(periods.count - 1), high: period.high, low: period.low, open: period.open, close: period.close)
+    }
+    
+    func currentPeriodIndex() -> Int32 {
         return Int32(periods.count - 1)
     }
     

@@ -12,12 +12,13 @@
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="long" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="quantity" attributeType="Decimal" defaultValueString="0.0"/>
+        <attribute name="shortFee" optional="YES" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="startPeriod" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="startPrice" attributeType="Decimal" defaultValueString="0.0"/>
         <attribute name="totalSpent" attributeType="Decimal" defaultValueString="0.0"/>
     </entity>
     <elements>
         <element name="ChartState" positionX="-63" positionY="45" width="128" height="59"/>
-        <element name="Position" positionX="-63" positionY="-18" width="128" height="179"/>
+        <element name="Position" positionX="-63" positionY="-18" width="128" height="194"/>
     </elements>
 </model>
