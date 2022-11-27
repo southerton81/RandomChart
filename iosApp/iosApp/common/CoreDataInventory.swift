@@ -6,7 +6,7 @@ final class CoreDataInventory {
     
     let persistentContainer: NSPersistentContainer
     let viewContext: NSManagedObjectContext
-    private let backgroundContext: NSManagedObjectContext
+    let backgroundContext: NSManagedObjectContext
     
     private init() {
         persistentContainer = NSPersistentContainer(name: "Data")
@@ -15,28 +15,34 @@ final class CoreDataInventory {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         }
-        
+    
         viewContext = persistentContainer.viewContext
         viewContext.automaticallyMergesChangesFromParent = true
         
         backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.automaticallyMergesChangesFromParent = true
     }
     
-    /* Performs supplied block on a background managed object context
-       and saves possible changes */
-    func perform(block: @escaping (_ context: NSManagedObjectContext) -> Void) async {
+    /* Performs supplied block on a background managed object context and saves any resulting changes in CoreData */
+    func performWrite(block: @escaping (_ context: NSManagedObjectContext) -> Void) async {
         await backgroundContext.perform {
-            do {
-                block(self.backgroundContext)
-                
-                if (self.backgroundContext.hasChanges) {
+            block(self.backgroundContext)
+            
+            if (self.backgroundContext.hasChanges) {
+                do {
                     try self.backgroundContext.save()
+                } catch {
+                    let nsError = error as NSError
+                    fatalError("performWrite() error: \(nsError), \(nsError.userInfo)")
                 }
-            } catch {
-                let nsError = error as NSError
-                fatalError("saveContext() error: \(nsError), \(nsError.userInfo)")
             }
+            
+        }
+    }
+    
+    /* Performs supplied block on a background managed object context returning its result */
+    func performRead<T>(block: @escaping (_ context: NSManagedObjectContext) -> T) async -> T  {
+        return await backgroundContext.perform {
+            return block(self.backgroundContext)
         }
     }
 }

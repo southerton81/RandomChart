@@ -7,43 +7,43 @@ struct FundsResult {
 }
 
 func calculateTotalFunds(_ c: CoreDataInventory, _ currentPriceCent: Int64) async -> FundsResult {
-    return await c.viewContext.perform { () -> FundsResult in
-            let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
-            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startPeriod", ascending: true)]
+    return await c.performRead { (c) -> FundsResult in
+        let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startPeriod", ascending: true)]
+        
+        if let positions = try? fetchRequest.execute() {
             
-            if let positions = try? fetchRequest.execute() {
-                
-                let closedPositionsValue = positions
-                    .filter({ p in p.closed == true })
-                    .map({ p in
-                        calculateClosedPostionValue(p)
-                    }).reduce(NSDecimalNumber.zero) { result, next in
-                        result.adding(next)
-                    }
-                
-                let openPositionsValue = positions
-                    .filter({ p in p.closed == false })
-                    .map({ p in
-                        calculateOpenPositionValue(currentPriceCent, p)
-                    }).reduce(NSDecimalNumber.zero) { result, next in
-                        result.adding(next)
-                    }
-                
-                let positionsCost = positions
-                    .map({ p in
-                        p.totalSpent ?? 0
-                    }).reduce(NSDecimalNumber.zero) { result, next in
-                        result.adding(next)
-                    }
-                
-                return FundsResult(totalCap: closedPositionsValue.subtracting(positionsCost).adding(openPositionsValue),
-                                   freeCap: closedPositionsValue.subtracting(positionsCost))
-            }
+            let closedPositionsValue = positions
+                .filter({ p in p.closed == true })
+                .map({ p in
+                    calculateClosedPostionValue(p)
+                }).reduce(NSDecimalNumber.zero) { result, next in
+                    result.adding(next)
+                }
             
-            return FundsResult(totalCap: NSDecimalNumber.zero, freeCap: NSDecimalNumber.zero)
+            let openPositionsValue = positions
+                .filter({ p in p.closed == false })
+                .map({ p in
+                    calculateOpenPositionValue(currentPriceCent, p)
+                }).reduce(NSDecimalNumber.zero) { result, next in
+                    result.adding(next)
+                }
+            
+            let positionsCost = positions
+                .map({ p in
+                    p.totalSpent ?? 0
+                }).reduce(NSDecimalNumber.zero) { result, next in
+                    result.adding(next)
+                }
+            
+            return FundsResult(totalCap: closedPositionsValue.subtracting(positionsCost).adding(openPositionsValue),
+                               freeCap: closedPositionsValue.subtracting(positionsCost))
         }
+        
+        return FundsResult(totalCap: NSDecimalNumber.zero, freeCap: NSDecimalNumber.zero)
+    }
 }
-    
+
 func calculateClosedPostionValue(_ p: Position) -> NSDecimalNumber {
     if let startPrice = p.startPrice, let endPrice = p.endPrice {
         if (!p.long) {

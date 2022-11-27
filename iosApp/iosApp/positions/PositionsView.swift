@@ -6,22 +6,25 @@ struct PositionsView: View {
     @EnvironmentObject var chartObservable: ChartObservableObject
     @State private var bottomSheetShown = false
     @State private var isSliding = false // Prevent BottomSheetView drag gesture from interacting with the Slider
-    @State private var positionSizePct: Double = 20
-    private var positionSizePctRange: ClosedRange<Double> = 1...100
+    @State var positionSizePct: Double = 0
+    @State private var positionSizePctRange: ClosedRange<Double> = 1...100
     private let nextCommand: NextCommand
     private let longCommand: LongCommand
     private let shortCommand: ShortCommand
     private let closeCommand: ClosePositionCommand
 
-    @FetchRequest(
-        entity: Position.entity(),
-        sortDescriptors: [
+    @FetchRequest(fetchRequest: positionsRequest()) private var positions: FetchedResults<Position>
+
+    static func positionsRequest() -> NSFetchRequest<Position> {
+        let fetchPostitions = NSFetchRequest<Position>(entityName: "Position")
+        fetchPostitions.sortDescriptors = [
             NSSortDescriptor(keyPath: \Position.closed, ascending: true),
             NSSortDescriptor(keyPath: \Position.endPeriod, ascending: false),
             NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)
         ]
-    )
-    var positions: FetchedResults<Position>
+        fetchPostitions.predicate = NSPredicate(format: "%K != -1", #keyPath(Position.startPeriod))
+        return fetchPostitions
+    }
     
     init() {
         self.nextCommand = NextCommand()
@@ -31,19 +34,23 @@ struct PositionsView: View {
     }
     
     var body: some View {
-        
         GeometryReader { geometry in
-            
             ZStack {
                 VStack(spacing: 0) {
                     Text("Total " + decimalPriceToString(self.positionsObservable.totalCap, 0) +
                          "$ Free " + decimalPriceToString(self.positionsObservable.freeFunds, 0) + "$")
                         .font(.footnote)
                     positionsList.animation(nil)
-                    buttons.background(Color(.secondarySystemBackground)).edgesIgnoringSafeArea(.all)
+                    buttons.background(Color(.secondarySystemBackground)).edgesIgnoringSafeArea(.all).animation(nil)
                     Spacer(minLength: 10)
-                    
-                }.background(Color(.secondarySystemBackground))
+                }
+                .background(Color(.secondarySystemBackground))
+                .onChange(of: self.positionSizePct) { _ in
+                    self.positionsObservable.recalculatePositionSize(self.positionSizePct)
+                }
+                .onAppear {
+                    self.positionSizePct = self.positionsObservable.positionSizePct
+                }
             }
             
             BottomSheetView(
@@ -51,8 +58,8 @@ struct PositionsView: View {
                 isSliding: self.$isSliding,
                 maxHeight: geometry.size.height * 0.5
             ) {
-                Text("Position size: " + String(format: "%.0f", self.positionSizePct) + "%")
-                Text(decimalPriceToString(self.positionsObservable.recalculatePositionSize(self.positionSizePct), 0) + "$")
+                Text("Position size: " + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
+                Text(decimalPriceToString(self.positionsObservable.positionSize, 0) + "$")
                 Slider(value: self.$positionSizePct, in: self.positionSizePctRange, step: 1) { _ in
                     self.isSliding = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -65,7 +72,6 @@ struct PositionsView: View {
     
     var positionsList: some View {
         List(self.positions
-            .filter({ position in position.startPeriod > 0}) // Dont show checkpoint positions
             .map({ (position) -> UiPosition in mapToUiPosition(position, self.chartObservable.currentPriceCents())}), id: \.self)
         { uiPosition in
             HStack {
@@ -82,6 +88,7 @@ struct PositionsView: View {
                     }) {
                         Text(uiPosition.action?.caption ?? "")
                     }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius:18))
+                         .disabled(self.positionsObservable.calculating)
                 }
             }
         }.listStyle(SidebarListStyle())
@@ -90,38 +97,33 @@ struct PositionsView: View {
     var buttons: some View {
         HStack {
             Button(action: { self.bottomSheetShown = true }) {
-                Text("Size: " + String(format: "%.0f", self.positionSizePct) + "%")
-            }.padding().foregroundColor(.white).background(Color.orange).clipShape(RoundedRectangle(cornerRadius: 20))
+                Text("Size: " + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.orange).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Spacer()
             
             Button(action: {
                 shortCommand.execute(positionsObservable, chartObservable)
-            }) { Text("Short") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color.red).clipShape(RoundedRectangle(cornerRadius: 20))
-                .disabled(!self.positionsObservable.canOpenNewPos)
+            }) {
+                Text("Short")
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color.red).clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 longCommand.execute(positionsObservable, chartObservable)
-            }) { Text("Long") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.green).clipShape(RoundedRectangle(cornerRadius: 20))
-                .disabled(!self.positionsObservable.canOpenNewPos)
+            }) {
+                Text("Long")
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.green).clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
-                nextCommand.execute(positionsObservable, chartObservable, positionSizePct)
-            }) { Text("Next") }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color("NextButtonBckgndColor")).clipShape(RoundedRectangle(cornerRadius: 20))
+                nextCommand.execute(positionsObservable, chartObservable)
+            }) {
+                Text("Next")
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color("NextButtonBckgndColor")).clipShape(RoundedRectangle(cornerRadius: 20))
+                .disabled(self.positionsObservable.calculating)
         }
         .padding([.leading, .trailing], 10)
-        .onAppear(perform: {
-            Task {
-                await self.positionsObservable.ensureStartPosition(startPrice: NSDecimalNumber(decimal: 0), endPrice: Constants.startFunds)
-                let currentPeriod = self.chartObservable.currentPeriod()
-                await self.positionsObservable.recalculateFunds(currentPeriod)
-                await MainActor.run {
-                    self.positionsObservable.recalculatePositionSize(self.positionSizePct)
-                    self.positionsObservable.checkEndSessionCondition(currentPeriod)
-                }
-            }
-        }
-        )
     }
     
     struct BottomSheetView<Content: View>: View {

@@ -7,7 +7,6 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.random.Random
 
-
 class Rand(seed: Int) {
     val random = Random(seed)
 }
@@ -19,13 +18,6 @@ fun getRandomAvailablePeriods(
     indexFrom: Int = 0,
     basePrice: Long = 5000 // Base price to keep fluctuations in same range
 ): List<PeriodDto> {
-
-
-    for (i in 33 downTo  0) {
-
-
-    }
-
     var price = startPrice
     var gaussian = Gaussian()
     return (0 until count).map {

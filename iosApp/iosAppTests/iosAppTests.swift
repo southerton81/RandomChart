@@ -9,7 +9,7 @@ class iosAppTests: XCTestCase {
         expectation.expectedFulfillmentCount = 2
         
         Task {
-            await CoreDataInventory.instance.perform { (context) in
+            await CoreDataInventory.instance.performWrite { (context) in
                 let newChartState = ChartState(context: context)
                 newChartState.chartLen = 100
                 newChartState.seed = 1
@@ -17,7 +17,7 @@ class iosAppTests: XCTestCase {
         }
         
         Task {
-            await CoreDataInventory.instance.perform { (context) in
+            await CoreDataInventory.instance.performWrite { (context) in
                 sleep(1)
                 self.modifyChartStateSeed(context, 2)
                 sleep(1) // Wait 1 seconds before save for the next background task to read the same version of entity
@@ -26,7 +26,7 @@ class iosAppTests: XCTestCase {
         }
         
         Task {
-            await CoreDataInventory.instance.perform { (context) in
+            await CoreDataInventory.instance.performWrite { (context) in
                 sleep(1)
                 self.modifyChartStateSeed(context, 3)
                 sleep(2)
@@ -35,21 +35,6 @@ class iosAppTests: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 8)
-    }
-    
-    private func modifyChartStateSeed(_ context: NSManagedObjectContext, _ seed: Int32) {
-        let fetchRequest: NSFetchRequest<ChartState> = ChartState.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "chartLen = %i", 100)
-        let chartStateEntity = try? context.fetch(fetchRequest).first
-        chartStateEntity?.seed = seed
-    }
-    
-    private func test(_ c: CoreDataInventory) async {
-        await c.perform(block: { c in
-            sleep(3)
-            print("test ", Thread.current)
-            
-        })
     }
     
     func testCoreDataBackgroundContext() {
@@ -84,5 +69,20 @@ class iosAppTests: XCTestCase {
             
             wait(for: [expectation], timeout: 12)
         }
+    }
+    
+    private func modifyChartStateSeed(_ context: NSManagedObjectContext, _ seed: Int32) {
+        let fetchRequest: NSFetchRequest<ChartState> = ChartState.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "chartLen = %i", 100)
+        let chartStateEntity = try? context.fetch(fetchRequest).first
+        chartStateEntity?.seed = seed
+    }
+    
+    private func test(_ c: CoreDataInventory) async {
+        await c.performWrite(block: { c in
+            sleep(3)
+            print("test ", Thread.current)
+            
+        })
     }
 }

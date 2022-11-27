@@ -5,20 +5,27 @@ import SwiftUI
 class PositionsObservableObject: ObservableObject {
     @Published var totalCap = NSDecimalNumber.zero
     @Published var canOpenNewPos = false
-    @Published var calculating = false
+    @Published var calculating = true
     @Published var endSessionCondition: EndSessionCondition? = nil
-    private let c: CoreDataInventory
+    @Published var positionSizePct: Double = 20
+    @Published var positionSize = NSDecimalNumber.zero
+    @Published var positions = [Position]()
     
-    var positionSize = NSDecimalNumber(20_000)
+    private let c: CoreDataInventory
     var freeFunds = NSDecimalNumber.zero
     
     init(_ c: CoreDataInventory) {
         self.c = c
     }
     
-    func recalculatePositionSize(_ positionSizePct: Double) -> NSDecimalNumber {
-        positionSize = totalCap.dividing(by: NSDecimalNumber(100)).multiplying(by: NSDecimalNumber(value: positionSizePct))
-        return positionSize
+    func recalculatePositionSize(_ positionSizePct: Double) {
+        self.positionSizePct = positionSizePct
+        self.positionSize = totalCap.dividing(by: NSDecimalNumber(100)).multiplying(by: NSDecimalNumber(value: self.positionSizePct))
+        self.canOpenNewPos = canOpenNewPosition()
+    }
+    
+    func maxPositionSizePct() -> Double {
+        self.freeFunds.pctOf(otherValue: self.totalCap).doubleValue
     }
     
     func recalculateFunds(_ currentPeriod: Period, _ applyShortPositionsCost: Bool = false) async {
@@ -36,13 +43,14 @@ class PositionsObservableObject: ObservableObject {
         await MainActor.run {
             self.totalCap = fundsResult.totalCap
             self.freeFunds = fundsResult.freeCap
+            self.recalculatePositionSize(self.positionSizePct)
             self.canOpenNewPos = canOpenNewPosition()
             self.calculating = false
         }
     }
     
     func checkEndSessionCondition(_ currentPeriod: Period) {
-        var endSessionCondition: EndSessionCondition? = nil
+        var endSessionCondition: EndSessionCondition? = EndSessionCondition.TimeOver
         
         if currentPeriod.index == Constants.sessionLength {
             endSessionCondition = EndSessionCondition.TimeOver
@@ -61,55 +69,45 @@ class PositionsObservableObject: ObservableObject {
         return freeFunds.floorToInt64() >= positionSize.floorToInt64() && freeFunds.floorToInt64() > 0
     }
     
-    func openNewPosition(_ currentPeriod: Period, _ startPeriod: Int32, isLongPosition: Bool) {
+    func openNewPosition(_ currentPeriod: Period, _ startPeriod: Int32, isLongPosition: Bool) async {
         if (canOpenNewPos) {
-            Task {
-                await c.perform { c in
-                    let price = NSDecimalNumber(value: currentPeriod.close).dividing(by: 100)
-                    
-                    let fee = self.positionSize.dividing(by: NSDecimalNumber(integerLiteral: 100)).multiplying(by: Constants.feePct)
-                    let positionSizeAfterFee = self.positionSize.subtracting(fee)
-                    
-                    let boughtQuantity = positionSizeAfterFee.dividing(by: price)
-                    let newPosition = Position(context: c)
-                    newPosition.totalSpent = self.positionSize
-                    newPosition.closed = false
-                    newPosition.startPrice = price
-                    newPosition.quantity = boughtQuantity
-                    newPosition.startPeriod = startPeriod
-                    newPosition.long = isLongPosition
-                    newPosition.creationDate = Date()
-                    
-                    if (!isLongPosition) {
-                        newPosition.shortFee = NSDecimalNumber.zero
-                    }
-                }
+            await c.performWrite { c in
+                let price = NSDecimalNumber(value: currentPeriod.close).dividing(by: 100)
                 
-                await recalculateFunds(currentPeriod)
+                let fee = self.positionSize.dividing(by: NSDecimalNumber(integerLiteral: 100)).multiplying(by: Constants.feePct)
+                let positionSizeAfterFee = self.positionSize.subtracting(fee)
+                
+                let boughtQuantity = positionSizeAfterFee.dividing(by: price)
+                let newPosition = Position(context: c)
+                newPosition.totalSpent = self.positionSize
+                newPosition.closed = false
+                newPosition.startPrice = price
+                newPosition.quantity = boughtQuantity
+                newPosition.startPeriod = startPeriod
+                newPosition.long = isLongPosition
+                newPosition.creationDate = Date()
+                
+                if (!isLongPosition) {
+                    newPosition.shortFee = NSDecimalNumber.zero
+                }
             }
         }
     }
     
-    func closePosition(_ positionId: NSManagedObjectID, _ currentPeriod: Period, _ endPeriodIndex: Int32) {
-        if (!calculating) {
-            Task {
-                await c.perform { c in
-                    let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
-                    fetchRequest.predicate = NSPredicate(format: "self == %@", positionId)
-                    let position = try? c.fetch(fetchRequest).first
-                    self.setPositionClosed(position, currentPeriod, endPeriodIndex)
-                }
-                
-                await recalculateFunds(currentPeriod)
-            }
+    func closePosition(_ positionId: NSManagedObjectID, _ currentPeriod: Period, _ currentPeriodIndex: Int32) async {
+        await c.performWrite { c in
+            let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
+            fetchRequest.predicate = NSPredicate(format: "self == %@", positionId)
+            let position = try? c.fetch(fetchRequest).first
+            self.setPositionClosed(position, currentPeriod, currentPeriodIndex)
         }
     }
     
-    private func setPositionClosed(_ position: Position?, _ currentPeriod: Period, _ endPeriodIndex: Int32) {
+    private func setPositionClosed(_ position: Position?, _ currentPeriod: Period, _ currentPeriodIndex: Int32) {
         let price = NSDecimalNumber(value: currentPeriod.close).dividing(by: 100)
         position?.closed = true
         position?.endPrice = price
-        position?.endPeriod = endPeriodIndex
+        position?.endPeriod = currentPeriodIndex
         
         if (position?.long ?? true) {
             position?.quantity = position?.quantity?.subtractingPct(pctValue: Constants.feePct)
@@ -120,7 +118,7 @@ class PositionsObservableObject: ObservableObject {
     }
     
     func ensureStartPosition(startPrice: NSDecimalNumber, endPrice: NSDecimalNumber) async {
-        await c.perform(block: { c in
+        await c.performWrite(block: { c in
             let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
             let r = try? fetchRequest.execute()
             if (r?.isEmpty ?? false) {
@@ -140,52 +138,60 @@ class PositionsObservableObject: ObservableObject {
         startingFundsPosition.long = true
     }
     
-    func endSession(_ currentPeriod: Period, _ endPeriod: Int32) {
-        Task {
-            //1. Close all positions
-            /*await c.sharedBackgroundContext()
-                .perform(schedule: NSManagedObjectContext.ScheduledTaskType.immediate) { () -> _ in
-                    let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
-                    fetchRequest.predicate = NSPredicate(format: "%K == false", #keyPath(Position.closed))
-                    
-                    if let openPositions = try? fetchRequest.execute() {
-                        self.c.saveContext(block: { c in
-                            openPositions.forEach { p in
-                                self.setPositionClosed(p, currentPeriod, endPeriod)
-                            }
-                        })
-                    }
+    func closeAllPositions(_ currentPeriod: Period, _ currentPeriodIndex: Int32) async {
+        await c.performWrite { c in
+            let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
+            fetchRequest.predicate = NSPredicate(format: "%K == false", #keyPath(Position.closed))
+            
+            if let openPositions = try? fetchRequest.execute() {
+                openPositions.forEach { p in
+                    self.setPositionClosed(p, currentPeriod, currentPeriodIndex)
                 }
-            
-            //2. Zip positions to single
-            await c.sharedBackgroundContext()
-                .perform(schedule: NSManagedObjectContext.ScheduledTaskType.immediate) { () -> _ in
-                    
-                    let fetchLastCheckpointPosition = NSFetchRequest<Position>(entityName: "Position")
-                    fetchLastCheckpointPosition.fetchLimit = 1
-                    fetchLastCheckpointPosition.sortDescriptors = [NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)]
-                    
-                    let sessionPositionsRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Position")
-                    sessionPositionsRequest.predicate = NSPredicate(format: "%K != -1", #keyPath(Position.startPeriod))
-                    let deleteRequest = NSBatchDeleteRequest(fetchRequest: sessionPositionsRequest)
-                    
-                    self.c.saveContext(block: { context in
-                        
-                        // Remove all in-session positions
-                        try! context.execute(deleteRequest)
-                        
-                        // Get start price from recent checkpoint
-                        let startPrice = try! fetchLastCheckpointPosition.execute().first?.endPrice ?? 0
-                        
-                        // Create new checkpoint to contain session result
-                        self.buildCheckpointPosition(context, startPrice, self.totalCap)
-                    })
-                }
-            */
-            //3. Reset
-            
-            
+            }
         }
+    }
+    
+    func reduceSessionPositions(_ currentPeriod: Period, _ currentPeriodIndex: Int32) async {
+        await c.performWrite { c in
+            let fetchLastCheckpointPosition = NSFetchRequest<Position>(entityName: "Position")
+            fetchLastCheckpointPosition.fetchLimit = 1
+            fetchLastCheckpointPosition.sortDescriptors = [NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)]
+            
+            let sessionPositionsRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Position")
+            sessionPositionsRequest.predicate = NSPredicate(format: "%K != -1", #keyPath(Position.startPeriod))
+            let deleteRequest = NSBatchDeleteRequest(fetchRequest: sessionPositionsRequest)
+            
+            // Remove all in-session positions
+            try! c.execute(deleteRequest)
+            
+            // Get start price from recent checkpoint
+            let startPrice = try! fetchLastCheckpointPosition.execute().first?.endPrice ?? 0
+            
+            // Create new checkpoint to contain session result
+            self.buildCheckpointPosition(c, startPrice, self.totalCap)
+        }
+    }
+    
+    func recalculateTotalSessionProfitPct(_ currentPeriod: Period) async -> NSDecimalNumber {
+        let startCap: NSDecimalNumber = await c.performRead { (c) -> (NSDecimalNumber) in
+            let fetchLastCheckpointPosition = NSFetchRequest<Position>(entityName: "Position")
+            fetchLastCheckpointPosition.fetchLimit = 1
+            fetchLastCheckpointPosition.sortDescriptors = [NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)]
+            
+            // Get start price from most recent checkpoint
+            if let endPrice = try? fetchLastCheckpointPosition.execute().first?.endPrice {
+                return NSDecimalNumber(decimal: endPrice.decimalValue)
+            } else {
+                return NSDecimalNumber.zero
+            }
+        }
+        
+       let r = startCap.stringValue
+        
+        await self.recalculateFunds(currentPeriod)
+        
+         let rr = totalCap.stringValue
+        return getDifferenceInPct(startCap, totalCap)
     }
     
     enum EndSessionCondition: String {

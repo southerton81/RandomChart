@@ -8,7 +8,6 @@ enum Endpoint {
     case scores
     case user
     case signup
-    
 }
 
 extension Endpoint {

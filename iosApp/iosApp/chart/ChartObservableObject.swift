@@ -3,22 +3,6 @@ import shared
 import SwiftUI
 import CoreData
 
-class Period {
-    let index: Int64
-    let high: Int64
-    let low: Int64
-    let open: Int64
-    let close: Int64
-    
-    init(index: Int64, high: Int64, low: Int64, open: Int64, close: Int64) {
-        self.index = index
-        self.high = high
-        self.low = low
-        self.open = open
-        self.close = close
-    }
-}
-
 class ChartObservableObject: ObservableObject {
     @Published var upPeriods = Array<CGRect>()
     @Published var downPeriods = Array<CGRect>()
@@ -43,32 +27,32 @@ class ChartObservableObject: ObservableObject {
         self.c = c
     }
     
-    func reset(_ chartLen: Int32 = 10, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) {
-        self.chartLenScreen = chartLenScreen
-        self.rand = Rand(seed: seed)
-        self.seed = seed
-        self.startPrice = startPrice
-        self.periods = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: startPrice, rand: rand, count: chartLen, indexFrom: 0, basePrice: startPrice)
-    }
-    
-    func restore() {
-        let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
-        if let chartStates = try? c.viewContext.fetch(fetchRequest) {
-            if (!chartStates.isEmpty) {
-                let chartState = chartStates[0]
-                reset(chartState.chartLen, chartState.seed)
-                return
+    func setupChart(_ restoreState: Bool = true) async {
+        if (restoreState) {
+            let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
+            if let chartStates = try? c.viewContext.fetch(fetchRequest) {
+                if (!chartStates.isEmpty) {
+                    let chartState = chartStates[0]
+                    await reset(chartState.chartLen, chartState.seed)
+                    return
+                }
             }
         }
-        reset()
+        await reset()
     }
     
     func isChartEmpty() -> Bool {
         return screenPeriods.isEmpty
     }
     
-    func generatePeriodsRects(_ offset: Float, _ width: Float, _ height: Float) {
-        screenPeriods = PeriodsConvertKt.convertToScreen(allPeriods: periods, periodsOnScreen: chartLenScreen, offset: offset, w: width, h: height)
+    func setSize(_ width: Float, _ height: Float) {
+        self.width = width
+        self.height = height
+    }
+    
+    func generatePeriodsRects(_ offset: Float) {
+        screenPeriods = PeriodsConvertKt.convertToScreen(allPeriods: periods, periodsOnScreen: chartLenScreen,
+                                                         offset: offset, w: self.width, h: self.height)
         
         if (screenPeriods.count < chartLenScreen / 2) {
             offsetLimitRange = 0..<Int(offset)
@@ -77,9 +61,6 @@ class ChartObservableObject: ObservableObject {
         }
         
         convertToRects()
-        
-        self.width = width
-        self.height = height
     }
     
     func zoom(_ offset: Float, _ width: Float, _ height: Float, _ zoomBy: Int32) -> CGFloat {
@@ -87,7 +68,7 @@ class ChartObservableObject: ObservableObject {
         let period = zoomToPeriod ?? findCentralPeriod(width)
         let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: period, w: width)
         zoomToPeriod = period
-        generatePeriodsRects(newOffset, width, height)
+        generatePeriodsRects(newOffset)
         return CGFloat(newOffset)
     }
     
@@ -95,28 +76,24 @@ class ChartObservableObject: ObservableObject {
         zoomToPeriod = nil
     }
     
-    func next(_ defaultOffset: CGFloat) -> CGFloat {
-        if let lastClose = periods.last?.close {
-            let nextPeriod = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: lastClose, rand: rand, count: 1, indexFrom: Int32(periods.count), basePrice: startPrice)[0]
-            periods.append(nextPeriod)
-            let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: nextPeriod, w: self.width)
-            generatePeriodsRects(newOffset, self.width, self.height)
-            
-            description = "Close: $\(int64PriceToString(nextPeriod.close))"
-            
-            return CGFloat(newOffset)
-        }
-        return defaultOffset
+    func next() -> CGFloat {
+        let lastClose = periods.last!.close
+        let nextPeriod = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: lastClose, rand: rand, count: 1, indexFrom: Int32(periods.count), basePrice: startPrice)[0]
+        periods.append(nextPeriod)
+        let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: nextPeriod, w: self.width)
+        generatePeriodsRects(newOffset)
+        description = "Close: $\(int64PriceToString(nextPeriod.close))"
+        return CGFloat(newOffset)
     }
     
-    func saveChartState() async {
-        await c.perform(block: { c in
+    func saveChartState(_ seed: Int32, _ chartLen: Int32) async {
+        await c.performWrite(block: { c in
             do {
                 let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
                 let chartStates = try fetchRequest.execute()
                 let chartState = (chartStates.isEmpty) ? ChartState(context: c) : chartStates[0]
-                chartState.seed = self.seed
-                chartState.chartLen = Int32(self.periods.count - 1)
+                chartState.seed = seed
+                chartState.chartLen = chartLen
             } catch let error {
                 print(error.localizedDescription)
             }
@@ -157,6 +134,18 @@ class ChartObservableObject: ObservableObject {
     
     func currentPeriodIndex() -> Int32 {
         return Int32(periods.count - 1)
+    }
+    
+    private func reset(_ chartLen: Int32 = 10, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) async {
+        await saveChartState(seed, chartLen)
+        
+        await MainActor.run {
+            self.seed = seed
+            self.chartLenScreen = chartLenScreen
+            self.rand = Rand(seed: seed)
+            self.startPrice = startPrice
+            self.periods = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: startPrice, rand: rand, count: chartLen, indexFrom: 0, basePrice: startPrice)
+        }
     }
     
     private func findCentralPeriod(_ width: Float) -> PeriodDto {

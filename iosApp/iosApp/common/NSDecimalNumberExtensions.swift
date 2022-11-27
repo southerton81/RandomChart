@@ -27,5 +27,10 @@ extension NSDecimalNumber {
         return pct.multiplying(by: pctValue)
     }
     
+    public func pctOf(otherValue: NSDecimalNumber) -> NSDecimalNumber {
+        let pct = otherValue.dividing(by: NSDecimalNumber(integerLiteral: 100))
+        return dividing(by: pct)
+    }
+    
     var absValue: Self { .init(decimal: decimalValue.magnitude) }
 }

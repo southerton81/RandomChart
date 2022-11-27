@@ -72,7 +72,15 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = ""
+            argument = "-com.apple.CoreData.Logging.stderr 1"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-com.apple.CoreData.SQLDebug 1"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-com.apple.CoreData.ConcurrencyDebug"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -6,7 +6,9 @@ var currentOffset: CGFloat = 0
 
 struct ChartView: View {
     @EnvironmentObject var chartObservable: ChartObservableObject
+    @EnvironmentObject var positionsObservable: PositionsObservableObject
     let positionsView: PositionsView
+    private let resetCommand: ResetCommand = ResetCommand()
      
     init(_ positionsView: PositionsView) {
         self.positionsView = positionsView
@@ -15,13 +17,13 @@ struct ChartView: View {
     var body: some View {
         VStack(spacing: 0) {
             Text(self.chartObservable.description).font(.system(size: 12))
-            self.makeChart()
+            chartView()
             positionsView
         }
         .background(Color.white)
     }
     
-    func makeChart() -> some View {
+    func chartView() -> some View {
         return GeometryReader { (geometry) in
             ZStack {
                 drawGrid(geometry.size.width, geometry.size.height).stroke(Color.gray, lineWidth: 0.2)
@@ -49,13 +51,6 @@ struct ChartView: View {
                     }.stroke(Color.gray, lineWidth: 2)
                 }
             }
-            .onAppear(perform: {
-                if (chartObservable.isChartEmpty()) {
-                    chartObservable.restore()
-                    chartObservable.generatePeriodsRects(0, Float(geometry.size.width), Float(geometry.size.height))
-                    currentOffset = chartObservable.next(currentOffset)
-                }
-            })
             .background(Color.white)
             .gesture(
                 MagnificationGesture(minimumScaleDelta: 0.01)
@@ -87,8 +82,14 @@ struct ChartView: View {
                         currentOffset = max(CGFloat(self.chartObservable.offsetLimitRange.startIndex), currentOffset + (lastDrag ?? 0) - action.translation.width)
                         currentOffset = min(currentOffset, CGFloat(self.chartObservable.offsetLimitRange.endIndex))
                         lastDrag = action.translation.width
-                        self.chartObservable.generatePeriodsRects(Float(currentOffset), Float(geometry.size.width), Float(geometry.size.height))
+                        self.chartObservable.generatePeriodsRects(Float(currentOffset))
                     })
+            .task {
+                if (self.chartObservable.isChartEmpty()) {
+                    self.chartObservable.setSize(Float(geometry.size.width), Float(geometry.size.height))
+                    await resetCommand.execute(positionsObservable, chartObservable)
+                }
+            }
         }
     }
     

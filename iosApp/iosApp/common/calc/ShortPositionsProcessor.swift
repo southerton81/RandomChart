@@ -2,7 +2,7 @@ import Foundation
 import CoreData
 
 func applyShortsInterestRates(_ c: CoreDataInventory, _ currentPeriod: Period) async {
-    await c.perform(block: { c in
+    await c.performWrite(block: { c in
         let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
         let shortPositions = NSPredicate(format: "%K == false", #keyPath(Position.long))
         let openedPositions = NSPredicate(format: "%K == false", #keyPath(Position.closed))
