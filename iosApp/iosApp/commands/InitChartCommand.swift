@@ -1,15 +1,14 @@
 import Foundation
 
-
-class ResetCommand : Command {
+class InitChartCommand : Command {
     func execute(_ positionsObservable: PositionsObservableObject,
-                 _ chartObservable: ChartObservableObject) async {
-        await chartObservable.setupChart()
-        
+                 _ chartObservable: ChartObservableObject,
+                 restoreState: Bool) async {
+        await chartObservable.setupChart(restoreState)
         await MainActor.run {
-            chartObservable.generatePeriodsRects(0)
-            currentOffset = chartObservable.next()
+            ChartUiState.shared.currentOffset = chartObservable.next()
         }
+        await chartObservable.saveChartState()
         
         let currentPeriod = await MainActor.run {
             return chartObservable.currentPeriod()
@@ -18,7 +17,7 @@ class ResetCommand : Command {
         await positionsObservable.ensureStartPosition(startPrice: NSDecimalNumber(decimal: 0), endPrice: Constants.startFunds)
         await positionsObservable.recalculateFunds(currentPeriod)
         await MainActor.run {
-            positionsObservable.checkEndSessionCondition(currentPeriod)
+            positionsObservable.maybeSetEndSessionCondition(currentPeriod)
         }
     }
 }

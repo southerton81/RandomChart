@@ -83,7 +83,11 @@ func calculateOpenPositionValue(_ currentPriceCent: Int64, _ p: Position) -> NSD
 func getDifferenceInPct(_ value1: NSDecimalNumber, _ value2: NSDecimalNumber) -> NSDecimalNumber {
     let diff = value2.subtracting(value1)
     let pct = value1.dividing(by: NSDecimalNumber(integerLiteral: 100))
-    return diff.dividing(by: pct)
+    if (pct != 0) {
+        return diff.dividing(by: pct)
+    } else {
+        return NSDecimalNumber.zero
+    }
 }
 
 func getPositionResultInPct(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {

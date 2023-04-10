@@ -12,7 +12,7 @@ public func int64PriceToString(_ price: Int64) -> String {
     return s
 }
 
-public func decimalPriceToString(_ value: NSDecimalNumber, _ minimumFractionDigits: Int = 2, showSign: Bool = false) -> String {
+public func decimalToString(_ value: NSDecimalNumber, _ minimumFractionDigits: Int = 2, showSign: Bool = false) -> String {
     let fmt = NumberFormatter()
     fmt.numberStyle = .none
     fmt.minimumFractionDigits = minimumFractionDigits

@@ -1,13 +1,15 @@
 import Foundation
 import SwiftUI
 
-struct MainTabView<ChartView: View>: View {
+struct MainTabView<ChartView: View, ProfileView: View>: View {
     private let chartView: ChartView
     private let leaderboardView: LeaderboardView
+    private let profileView: ProfileView
     
-    init(_ chartView: ChartView, _ leaderboardView: LeaderboardView) {
+    init(_ chartView: ChartView, _ leaderboardView: LeaderboardView, _ profileView: ProfileView) {
         self.chartView = chartView
         self.leaderboardView = leaderboardView
+        self.profileView = profileView
     }
     
     var body: some View {
@@ -29,7 +31,12 @@ struct MainTabView<ChartView: View>: View {
                     Image(systemName: "person.3.fill")
                     Text("Leaderboard")
                 }
-            Text("Nearby Screen")
+            self.profileView
+                .frame(
+                    maxWidth: .infinity,
+                    maxHeight: .infinity,
+                    alignment: .bottom
+                )
                 .tabItem {
                     Image(systemName: "ellipsis")
                     Text("More")

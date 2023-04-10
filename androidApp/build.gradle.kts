@@ -1,7 +1,6 @@
 plugins {
     id("com.android.application")
     kotlin("android")
-    id("kotlin-android-extensions")
 }
 group = "com.jetbrains"
 version = "1.0-SNAPSHOT"

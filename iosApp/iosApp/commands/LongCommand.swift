@@ -1,6 +1,5 @@
 import Foundation
 
-
 class LongCommand : Command {
     func execute(_ positionsObservableObject: PositionsObservableObject,
                  _ chartObservableObject: ChartObservableObject) {

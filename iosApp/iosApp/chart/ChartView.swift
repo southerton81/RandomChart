@@ -1,14 +1,10 @@
 import SwiftUI 
 
-var lastDrag: CGFloat? = nil
-var lastMagnitude: CGFloat? = nil
-var currentOffset: CGFloat = 0
-
 struct ChartView: View {
     @EnvironmentObject var chartObservable: ChartObservableObject
     @EnvironmentObject var positionsObservable: PositionsObservableObject
     let positionsView: PositionsView
-    private let resetCommand: ResetCommand = ResetCommand()
+    private let initChartCommand: InitChartCommand = InitChartCommand()
      
     init(_ positionsView: PositionsView) {
         self.positionsView = positionsView
@@ -55,39 +51,39 @@ struct ChartView: View {
             .gesture(
                 MagnificationGesture(minimumScaleDelta: 0.01)
                     .onChanged { action in
-                        let difference = action.magnitude - (lastMagnitude ?? action.magnitude)
+                        let difference = action.magnitude - (ChartUiState.shared.lastMagnitude ?? action.magnitude)
                         
                         if (difference != 0) {
                             let zoom: Int32 = difference > 0 ? 10 : -10
-                            currentOffset = self.chartObservable.zoom(Float(currentOffset), Float(geometry.size.width), Float(geometry.size.height), zoom)
+                            ChartUiState.shared.currentOffset = self.chartObservable.zoom(Float(ChartUiState.shared.currentOffset), Float(geometry.size.width), Float(geometry.size.height), zoom)
                         }
                         
-                        lastMagnitude = action.magnitude
-                        lastDrag = nil
+                        ChartUiState.shared.lastMagnitude = action.magnitude
+                        ChartUiState.shared.lastDrag = nil
                 }
                 .onEnded { action in
                     self.chartObservable.endZoom()
-                    lastMagnitude = nil
+                    ChartUiState.shared.lastMagnitude = nil
                 })
             .simultaneousGesture(
                 DragGesture(minimumDistance: 0, coordinateSpace: .local)
                     .onEnded { action in
-                        lastDrag = nil
+                        ChartUiState.shared.lastDrag = nil
                         let d = sqrt(pow(action.translation.height, 2) + pow(action.translation.width, 2))
                         if (d < 3) {
                             self.chartObservable.selectPeriod(x: Float(action.location.x))
                         }
                     }.onChanged { action in
                         self.chartObservable.endZoom()
-                        currentOffset = max(CGFloat(self.chartObservable.offsetLimitRange.startIndex), currentOffset + (lastDrag ?? 0) - action.translation.width)
-                        currentOffset = min(currentOffset, CGFloat(self.chartObservable.offsetLimitRange.endIndex))
-                        lastDrag = action.translation.width
-                        self.chartObservable.generatePeriodsRects(Float(currentOffset))
+                        ChartUiState.shared.currentOffset = max(CGFloat(self.chartObservable.offsetLimitRange.startIndex), ChartUiState.shared.currentOffset + (ChartUiState.shared.lastDrag ?? 0) - action.translation.width)
+                        ChartUiState.shared.currentOffset = min(ChartUiState.shared.currentOffset, CGFloat(self.chartObservable.offsetLimitRange.endIndex))
+                        ChartUiState.shared.lastDrag = action.translation.width
+                        self.chartObservable.generatePeriodsRects(Float(ChartUiState.shared.currentOffset))
                     })
             .task {
                 if (self.chartObservable.isChartEmpty()) {
                     self.chartObservable.setSize(Float(geometry.size.width), Float(geometry.size.height))
-                    await resetCommand.execute(positionsObservable, chartObservable)
+                    await initChartCommand.execute(positionsObservable, chartObservable, restoreState: true)
                 }
             }
         }
@@ -95,7 +91,7 @@ struct ChartView: View {
     
     func drawGrid(_ w: CGFloat, _ h: CGFloat) -> Path {
         return Path { path in
-            let shift = CGFloat(Int(currentOffset) % Int(w))
+            let shift = CGFloat(Int(ChartUiState.shared.currentOffset) % Int(w))
             let stepHor = w / 3
             let stepVer = h / 8
             

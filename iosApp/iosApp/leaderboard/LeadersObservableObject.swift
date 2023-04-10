@@ -31,8 +31,13 @@ class LeadersObservableObject: ObservableObject {
     private let userEndpoint = "http://localhost:8080/api/users/user"
     private let signUpEndpoint = "http://localhost:8080/api/auth/signup"
     
+    private let c: CoreDataInventory
     
-    func updateScores(_ c: CoreDataInventory, _ currentPriceCents: Int64) {
+    init(_ c: CoreDataInventory) {
+        self.c = c
+    }
+    
+    func updateScores(_ currentPriceCents: Int64) {
         self.leaderboardUiModel = LeaderboardUiModel(scores: leaderboardUiModel.scores,
                                                      userScoreIndex: leaderboardUiModel.userScoreIndex,
                                                      showSignupPrompt: false, showProgress: true)
@@ -100,7 +105,7 @@ class LeadersObservableObject: ObservableObject {
         ], authorizationToken: accessToken)
     }
     
-    func onUserJoin(_ c: CoreDataInventory, _ username: String, _ currentPriceCents: Int64) {
+    func onUserJoin(_ username: String, _ currentPriceCents: Int64) {
         let lastScores = self.leaderboardUiModel.scores
         Task {
             do {
@@ -119,7 +124,7 @@ class LeadersObservableObject: ObservableObject {
                 
                 let tokenModel = try JSONDecoder().decode(TokenModel.self, from: data)
                 saveToKeychain(Data(tokenModel.accessToken.utf8), keyChainServiceName, keyChainAccountName)
-                updateScores(c, currentPriceCents)
+                updateScores(currentPriceCents)
             } catch {
                 await MainActor.run {
                     self.leaderboardUiModel = LeaderboardUiModel(scores: lastScores, userScoreIndex: -1, showSignupPrompt: true, showProgress: false)

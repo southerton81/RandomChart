@@ -10,12 +10,16 @@ final class CoreDataInventory {
     
     private init() {
         persistentContainer = NSPersistentContainer(name: "Data")
+        
+        let description = persistentContainer.persistentStoreDescriptions.first
+        description?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+    
         persistentContainer.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         }
-    
+        
         viewContext = persistentContainer.viewContext
         viewContext.automaticallyMergesChangesFromParent = true
         
@@ -44,5 +48,5 @@ final class CoreDataInventory {
         return await backgroundContext.perform {
             return block(self.backgroundContext)
         }
-    }
+    } 
 }

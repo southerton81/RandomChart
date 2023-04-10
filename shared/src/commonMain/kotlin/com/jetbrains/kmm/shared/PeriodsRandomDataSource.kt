@@ -24,7 +24,7 @@ fun getRandomAvailablePeriods(
         val high = price + randomChangeByPercent(basePrice, rand.random, gaussian, rand.random.nextDouble(0.0, 5.0))
         val low = price - randomChangeByPercent(basePrice, rand.random, gaussian, rand.random.nextDouble(0.0, 5.0))
         val open = price
-        val close = price//rand.random.nextLong(low, high + 1)
+        val close = rand.random.nextLong(low, high + 1)
         price = close
 
         PeriodDto(

@@ -1,3 +1,4 @@
+
 import SwiftUI
 
 @main
@@ -6,7 +7,8 @@ struct ChartApp: App {
         WindowGroup {
             AppRootView(CoreDataInventory.instance, MainTabView(
                 ChartView(PositionsView()).environment(\.managedObjectContext, CoreDataInventory.instance.viewContext),
-                LeaderboardView(CoreDataInventory.instance)
+                LeaderboardView(),
+                ProfileView().environment(\.managedObjectContext, CoreDataInventory.instance.viewContext)
             )).onAppear {
                 UINavigationBar.appearance().largeTitleTextAttributes = [.font : UIFont.systemFont(ofSize: 28, weight: .bold)]
             }

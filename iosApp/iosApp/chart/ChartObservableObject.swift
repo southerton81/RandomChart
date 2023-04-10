@@ -78,7 +78,8 @@ class ChartObservableObject: ObservableObject {
     
     func next() -> CGFloat {
         let lastClose = periods.last!.close
-        let nextPeriod = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: lastClose, rand: rand, count: 1, indexFrom: Int32(periods.count), basePrice: startPrice)[0]
+        let nextPeriod = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: lastClose, rand: rand, count: 1, indexFrom: Int32(periods.count), basePrice:
+                                                                                startPrice)[0]
         periods.append(nextPeriod)
         let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: nextPeriod, w: self.width)
         generatePeriodsRects(newOffset)
@@ -86,14 +87,14 @@ class ChartObservableObject: ObservableObject {
         return CGFloat(newOffset)
     }
     
-    func saveChartState(_ seed: Int32, _ chartLen: Int32) async {
+    func saveChartState() async {
         await c.performWrite(block: { c in
             do {
                 let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
                 let chartStates = try fetchRequest.execute()
                 let chartState = (chartStates.isEmpty) ? ChartState(context: c) : chartStates[0]
-                chartState.seed = seed
-                chartState.chartLen = chartLen
+                chartState.seed = self.seed
+                chartState.chartLen = Int32(self.periods.count - 1)
             } catch let error {
                 print(error.localizedDescription)
             }
@@ -113,11 +114,6 @@ class ChartObservableObject: ObservableObject {
         if (newSelectedIndex < self.screenPeriods.count) {
             selectedIndex = newSelectedIndex
             let periodDto = self.screenPeriods[selectedIndex].periodDto
-            
-            var s = String(periodDto.high)
-            if (s.count > 2) {
-                s.insert(".", at: s.index(s.endIndex, offsetBy: -2))
-            }
             description = "High: $\(int64PriceToString(periodDto.high)) Low: $\(int64PriceToString(periodDto.low))" +
             " -- Open: $\(int64PriceToString(periodDto.open)) Close: $\(int64PriceToString(periodDto.close))"
         }
@@ -136,9 +132,7 @@ class ChartObservableObject: ObservableObject {
         return Int32(periods.count - 1)
     }
     
-    private func reset(_ chartLen: Int32 = 10, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) async {
-        await saveChartState(seed, chartLen)
-        
+    private func reset(_ chartLen: Int32 = 100, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) async {
         await MainActor.run {
             self.seed = seed
             self.chartLenScreen = chartLenScreen
