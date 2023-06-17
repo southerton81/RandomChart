@@ -18,7 +18,7 @@ struct MainTabView<ChartView: View, ProfileView: View>: View {
                 self.chartView
             }
             .tabItem {
-                Image(systemName: "chart.bar.fill")
+                Image(systemName: "chart.xyaxis.line")
                 Text("Chart")
             }
             self.leaderboardView
@@ -38,8 +38,8 @@ struct MainTabView<ChartView: View, ProfileView: View>: View {
                     alignment: .bottom
                 )
                 .tabItem {
-                    Image(systemName: "ellipsis")
-                    Text("More")
+                    Image(systemName: "list.dash")
+                    Text("History")
                 }
         }.onAppear {
             if #available(iOS 15.0, *) {

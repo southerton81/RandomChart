@@ -41,7 +41,7 @@ struct SessionResultView: View {
                 
                 await MainActor.run {
                     self.profitPctColor = (profitPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedAscending) ? Color.red : Color.green
-                    self.profitPctColor = (profitPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedSame) ? Color.black : self.profitPctColor
+                    self.profitPctColor = (profitPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedSame) ? Color.gray : self.profitPctColor
                     let minimumFracttionalDigits = (profitPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedSame) ? 1 : 2
                     self.profitPct = decimalToString(profitPct, minimumFracttionalDigits, showSign: true) + "%"
                 }

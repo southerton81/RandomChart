@@ -20,7 +20,7 @@ struct ProfileView: View {
         ZStack(alignment: .center) {
             VStack(spacing: 0) {
                 Spacer()
-                Text("Sessions History")
+                Text("Trade results history")
                 Spacer()
                 
                 List(getPostitionsList(), id: \.self)
@@ -39,6 +39,10 @@ struct ProfileView: View {
                     }
                 })
                 .listStyle(SidebarListStyle())
+                
+                Spacer()
+                Text("Version 1.0").font(.system(size: 10))
+                Spacer()
             }
         }
     }
@@ -46,6 +50,6 @@ struct ProfileView: View {
     private func getPostitionsList() -> [UiPosition] {
         return self.positions
             .dropLast()
-            .map({ (position) -> UiPosition in mapToUiPosition(position, 0)})
+            .map({ (position) -> UiPosition in mapToUiClosedPosition(position) })
     }
 }

@@ -52,7 +52,7 @@ private func maybeLiquidateShort(_ currentPeriod: Period, _ p: Position, _ short
         p.endPeriod = Int32(currentPeriod.index)
         p.closed = true
         
-        print("priceRange ", priceRange.stringValue)
+        /*print("priceRange ", priceRange.stringValue)
         print("positionHighPct ", positionHighPct.stringValue)
         print("positionLowPct ", positionLowPct.stringValue)
         print("pct ", pct.stringValue)
@@ -60,6 +60,6 @@ private func maybeLiquidateShort(_ currentPeriod: Period, _ p: Position, _ short
         print("deltaPct ", deltaPct)
         print("pctRange ", pctRange.stringValue)
         print("liquidationPrice ", liquidationPrice.stringValue)
-        print ("p ", getPositionResultInPct(p, liquidationPrice.multiplying(by: 100).int64Value).stringValue)
+        print ("p ", getPositionResultInPct(p, liquidationPrice.multiplying(by: 100).int64Value).stringValue)*/
     }
 }

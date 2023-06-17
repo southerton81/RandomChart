@@ -9,7 +9,7 @@ struct LeaderboardView: View {
     let usernameMaxChars = 30
     
     var body: some View {
-        ZStack(alignment: .center) {
+        ZStack {
             VStack(spacing: 0) {
                 Spacer()
                 Text("Leaderboard")
@@ -33,7 +33,7 @@ struct LeaderboardView: View {
                                 Group {
                                     if (self.leadersObservable.leaderboardUiModel.scores.isEmpty) {
                                         ZStack() {
-                                            Color(.secondarySystemBackground).ignoresSafeArea()
+                                            Color(.systemBackground).ignoresSafeArea()
                                         }
                                     }
                                 })
@@ -41,15 +41,13 @@ struct LeaderboardView: View {
                 }
             }
             
-            if self.leadersObservable.leaderboardUiModel.showSignupPrompt {
-                joinPrompt
-            }
-            
             if self.leadersObservable.leaderboardUiModel.showProgress {
                 ProgressView()
             }
         }
         .snackbar(errorState: $leadersObservable.errorState)
+        
+        .overlay(self.leadersObservable.leaderboardUiModel.showSignupPrompt ? joinPrompt : nil, alignment: .bottom)
         .onAppear(perform: {
             self.leadersObservable.updateScores(self.chartObservable.currentPriceCents())
         })
@@ -73,12 +71,14 @@ struct LeaderboardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 18)).buttonStyle(PlainButtonStyle())
                 .disabled(self.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             
-        }.padding([.horizontal], 20)
-            .padding([.vertical], 30)
-            .background(Color(.secondarySystemBackground))
-            .overlay(Rectangle()
-                .frame(width: nil, height: 1, alignment: .top)
-                .foregroundColor(Color(.separator)), alignment: .top)
+        }
+        .padding([.horizontal], 20)
+        .padding([.vertical], 30)
+        .background(Color(.secondarySystemBackground))
+        .overlay(Rectangle()
+            .frame(width: nil, height: 1, alignment: .top)
+            .foregroundColor(Color(.separator)), alignment: .top)
+        
     }
     
     func limitText(_ text: inout String, _ limit: Int) {

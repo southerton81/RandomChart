@@ -12,7 +12,9 @@ struct ChartView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Text(self.chartObservable.description).font(.system(size: 12))
+            Text(self.chartObservable.description).font(.footnote)
+                .frame(maxWidth: .infinity)
+                .background(Color(UIColor.systemBackground))
             chartView()
             positionsView
         }
@@ -22,32 +24,40 @@ struct ChartView: View {
     func chartView() -> some View {
         return GeometryReader { (geometry) in
             ZStack {
-                drawGrid(geometry.size.width, geometry.size.height).stroke(Color.gray, lineWidth: 0.2)
+                drawGrid(geometry.size.width, geometry.size.height).stroke(Color(UIColor.systemGray), lineWidth: 0.2)
                 
                 Path { path in
-                    chartObservable.allPeriods.forEach { rc in
+                    chartObservable.fullPeriodsDown.forEach { rc in
                         let x = rc.minX + ((rc.maxX - rc.minX) / 2)
                         path.move(to: CGPoint(x: x, y: rc.minY))
                         path.addLine(to: CGPoint(x: x, y: rc.maxY))
                     }
-                }.stroke(Color.black, lineWidth: 1)
+                }.stroke(Color(UIColor.systemRed), lineWidth: 1)
+                
+                Path { path in
+                    chartObservable.fullPeriodsUp.forEach { rc in
+                        let x = rc.minX + ((rc.maxX - rc.minX) / 2)
+                        path.move(to: CGPoint(x: x, y: rc.minY))
+                        path.addLine(to: CGPoint(x: x, y: rc.maxY))
+                    }
+                }.stroke(Color(UIColor.systemGreen), lineWidth: 1)
                 
                 Path { path in
                     path.addRects(chartObservable.upPeriods)
-                }.fill(Color.green)
+                }.fill(Color(UIColor.systemGreen))
                 
                 Path { path in
                     path.addRects(chartObservable.downPeriods)
-                }.fill(Color.red)
+                }.fill(Color(UIColor.systemRed))
                 
                 if (self.chartObservable.selectedIndex >= 0) {
                     Path { path in
-                        let selected = chartObservable.allPeriods[self.chartObservable.selectedIndex]
+                        let selected = chartObservable.fullPeriods[self.chartObservable.selectedIndex]
                         path.addRect(selected)
-                    }.stroke(Color.gray, lineWidth: 2)
+                    }.stroke(Color(UIColor.systemGray), lineWidth: 2)
                 }
             }
-            .background(Color.white)
+            .background(Color(UIColor.systemBackground))
             .gesture(
                 MagnificationGesture(minimumScaleDelta: 0.01)
                     .onChanged { action in

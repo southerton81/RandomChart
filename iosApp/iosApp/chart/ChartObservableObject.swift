@@ -6,7 +6,9 @@ import CoreData
 class ChartObservableObject: ObservableObject {
     @Published var upPeriods = Array<CGRect>()
     @Published var downPeriods = Array<CGRect>()
-    @Published var allPeriods = Array<CGRect>()
+    @Published var fullPeriodsDown = Array<CGRect>()
+    @Published var fullPeriodsUp = Array<CGRect>()
+    @Published var fullPeriods = Array<CGRect>()
     @Published var selectedIndex = -1
     @Published var description = " "
     
@@ -83,7 +85,7 @@ class ChartObservableObject: ObservableObject {
         periods.append(nextPeriod)
         let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: nextPeriod, w: self.width)
         generatePeriodsRects(newOffset)
-        description = "Close: $\(int64PriceToString(nextPeriod.close))"
+        description = "Current close: \(int64PriceToString(nextPeriod.close))"
         return CGFloat(newOffset)
     }
     
@@ -114,8 +116,8 @@ class ChartObservableObject: ObservableObject {
         if (newSelectedIndex < self.screenPeriods.count) {
             selectedIndex = newSelectedIndex
             let periodDto = self.screenPeriods[selectedIndex].periodDto
-            description = "High: $\(int64PriceToString(periodDto.high)) Low: $\(int64PriceToString(periodDto.low))" +
-            " -- Open: $\(int64PriceToString(periodDto.open)) Close: $\(int64PriceToString(periodDto.close))"
+            description = "O: \(int64PriceToString(periodDto.open)) H: \(int64PriceToString(periodDto.high)) L: \(int64PriceToString(periodDto.low))" +
+            " C: \(int64PriceToString(periodDto.close))"
         }
     }
     
@@ -150,7 +152,9 @@ class ChartObservableObject: ObservableObject {
     private func convertToRects() {
         self.upPeriods.removeAll()
         self.downPeriods.removeAll()
-        self.allPeriods.removeAll()
+        self.fullPeriodsUp.removeAll()
+        self.fullPeriodsDown.removeAll()
+        self.fullPeriods.removeAll()
         self.selectedIndex = -1
         
         for screenPeriod in screenPeriods {
@@ -164,7 +168,13 @@ class ChartObservableObject: ObservableObject {
                 self.upPeriods.append(rc)
             }
             
-            self.allPeriods.append(CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)))
+            if (screenPeriod.o <= screenPeriod.c) {
+                self.fullPeriodsDown.append(CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)))
+            } else {
+                self.fullPeriodsUp.append(CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)))
+            }
+            
+            self.fullPeriods.append(CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)))
         }
     }
 }

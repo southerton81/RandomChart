@@ -37,8 +37,8 @@ struct PositionsView: View {
         GeometryReader { geometry in
             ZStack {
                 VStack(spacing: 0) {
-                    Text("Total " + decimalToString(self.positionsObservable.totalCap, 0) +
-                         "$ Free " + decimalToString(self.positionsObservable.freeFunds, 0) + "$")
+                    Text("Total capital " + decimalToString(self.positionsObservable.totalCap, 0) +
+                         "$   Free funds " + decimalToString(self.positionsObservable.freeFunds, 0) + "$")
                         .font(.footnote)
                     
                     if (!self.positions.isEmpty) {
@@ -47,7 +47,7 @@ struct PositionsView: View {
                         Color.clear
                     }
                     
-                    buttons.background(Color(.secondarySystemBackground)).edgesIgnoringSafeArea(.all).animation(nil)
+                    buttons.background(Color(.systemBackground)).edgesIgnoringSafeArea(.all).animation(nil)
                     Spacer(minLength: 10)
                 }
                 .onChange(of: self.positionSizePct) { _ in
@@ -56,15 +56,16 @@ struct PositionsView: View {
                 .onAppear {
                     self.positionSizePct = self.positionsObservable.positionSizePct
                 }
-            }.background(Color(.secondarySystemBackground))
+            }.background(Color(.systemBackground))
             
             PositionSizeBottomSheetView(
                 isOpen: self.$bottomSheetShown,
                 isSliding: self.$isSliding,
                 maxHeight: geometry.size.height * 0.5
             ) {
-                Text("Position size: " + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
-                Text(decimalToString(self.positionsObservable.positionSize, 0) + "$")
+                Text("Position size (percent from total capital)").font(Font.callout.weight(.thin))
+                Text(String(format: "%.0f", self.positionsObservable.positionSizePct) + "%").font(Font.headline.weight(.black))
+                Text(decimalToString(self.positionsObservable.positionSize, 0) + "$").font(Font.callout.weight(.thin))
                 Slider(value: self.$positionSizePct, in: self.positionSizePctRange, step: 1) { _ in
                     self.isSliding = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -92,7 +93,7 @@ struct PositionsView: View {
                         closeCommand.execute(positionsObservable, chartObservable, uiPosition.id)
                     }) {
                         Text(uiPosition.action?.caption ?? "")
-                    }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius:18))
+                    }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius:18))
                          .disabled(self.positionsObservable.calculating)
                 }
             }
@@ -103,7 +104,7 @@ struct PositionsView: View {
         HStack {
             Button(action: { self.bottomSheetShown = true }) {
                 Text("Size: " + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.orange).clipShape(RoundedRectangle(cornerRadius: 20))
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemIndigo)).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Spacer()
             
@@ -111,21 +112,21 @@ struct PositionsView: View {
                 shortCommand.execute(positionsObservable, chartObservable)
             }) {
                 Text("Short")
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color.red).clipShape(RoundedRectangle(cornerRadius: 20))
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color(UIColor.systemRed)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 longCommand.execute(positionsObservable, chartObservable)
             }) {
                 Text("Long")
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.green).clipShape(RoundedRectangle(cornerRadius: 20))
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemGreen)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 nextCommand.execute(positionsObservable, chartObservable)
             }) {
                 Text("Next")
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color("NextButtonBckgndColor")).clipShape(RoundedRectangle(cornerRadius: 20))
+            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(self.positionsObservable.calculating)
         }
         .padding([.leading, .trailing], 10)
