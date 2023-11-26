@@ -2,21 +2,9 @@ import Foundation
 import SwiftUI
 import CoreData
 
-
-enum Endpoint {
-    case score
-    case scores
-    case user
-    case signup
-}
-
-extension Endpoint {
-    var serverUri: URL {
-        return URL(string: "http://localhost:8080/api")!
-    }
-}
-
 class LeadersObservableObject: ObservableObject {
+    
+    
     @Published var leaderboardUiModel: LeaderboardUiModel = LeaderboardUiModel(scores: [],
                                                                                userScoreIndex: -1,
                                                                                showSignupPrompt: false, showProgress: true)
@@ -25,11 +13,7 @@ class LeadersObservableObject: ObservableObject {
     
     private let keyChainServiceName = "access-token"
     private let keyChainAccountName = "charttycoon"
-    
-    private let scoreEndpoint = "http://localhost:8080/api/scores/score"
-    private let scoresEndpoint = "http://localhost:8080/api/scores/"
-    private let userEndpoint = "http://localhost:8080/api/users/user"
-    private let signUpEndpoint = "http://localhost:8080/api/auth/signup"
+     
     
     private let c: CoreDataInventory
     
@@ -38,13 +22,16 @@ class LeadersObservableObject: ObservableObject {
     }
     
     func updateScores(_ currentPriceCents: Int64) {
-        self.leaderboardUiModel = LeaderboardUiModel(scores: leaderboardUiModel.scores,
-                                                     userScoreIndex: leaderboardUiModel.userScoreIndex,
-                                                     showSignupPrompt: false, showProgress: true)
         Task {
             do {
                 let myScore = await calculateProfit(c, currentPriceCents)
-                try await postScore(score: myScore.floorToInt64())
+              
+                
+                do {
+                    try await postScore(score: myScore.floorToInt64())
+                } catch {
+                    // Empty
+                }
                 
                 async let user = getUser()
                 async let scores = getScores()
@@ -67,9 +54,8 @@ class LeadersObservableObject: ObservableObject {
         }
     }
     
-    func getScores() async throws -> [ScoreModel] {
-        let url = URL(string: scoresEndpoint)!
-        let (data, _) = try await URLSession.shared.data(from: url)
+    func getScores() async throws -> [ScoreModel] { 
+        let (data, _) = try await URLSession.shared.data(from: Endpoint.getScores.url)
         ScoreModel.resetIndex()
         return try JSONDecoder().decode([ScoreModel].self, from: data)
     }
@@ -80,8 +66,7 @@ class LeadersObservableObject: ObservableObject {
         }
         
         do {
-            let url = URL(string: userEndpoint)!
-            let (data, _) = try await URLSession.shared.request(from: url, authorizationToken: accessToken)
+            let (data, _) = try await URLSession.shared.request(from: Endpoint.getUser.url, authorizationToken: accessToken)
             return try Optional.some(JSONDecoder().decode(UserModel.self, from: data))
         } catch {
             if let httpError = error as? HttpError {
@@ -99,8 +84,7 @@ class LeadersObservableObject: ObservableObject {
             return
         }
         
-        let url = URL(string: scoreEndpoint)!
-        let (data, _) = try await URLSession.shared.request(from: url, httpMethod: "POST", body: [
+        let (data, _) = try await URLSession.shared.request(from: Endpoint.postScore.url, httpMethod: "POST", body: [
             "score": score
         ], authorizationToken: accessToken)
     }
@@ -114,9 +98,8 @@ class LeadersObservableObject: ObservableObject {
                 }
                 
                 let myScore = await calculateProfit(c, currentPriceCents)
-                
-                let url = URL(string: signUpEndpoint)!
-                let (data, _) = try await URLSession.shared.request(from: url, httpMethod: "POST", body: [
+                 
+                let (data, _) = try await URLSession.shared.request(from: Endpoint.postSignup.url, httpMethod: "POST", body: [
                     "username": username,
                     "password": UUID().uuidString,
                     "score": myScore.floorToInt64()

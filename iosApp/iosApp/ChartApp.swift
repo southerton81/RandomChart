@@ -6,7 +6,7 @@ struct ChartApp: App {
     var body: some Scene {
         WindowGroup {
             AppRootView(CoreDataInventory.instance, MainTabView(
-                ChartView(PositionsView()).environment(\.managedObjectContext, CoreDataInventory.instance.viewContext),
+                ChartView().environment(\.managedObjectContext, CoreDataInventory.instance.viewContext),
                 LeaderboardView(),
                 ProfileView().environment(\.managedObjectContext, CoreDataInventory.instance.viewContext)
             )).onAppear {

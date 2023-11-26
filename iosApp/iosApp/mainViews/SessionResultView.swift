@@ -32,7 +32,7 @@ struct SessionResultView: View {
                     await initChartCommand.execute(positionsObservable, chartObservable, restoreState: false)
                 }
             }) {
-                Text("Start new chart")
+                Text(StringConstants.newChart)
             }.padding(15).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color.blue).clipShape(RoundedRectangle(cornerRadius:18)).frame(height: 100)
             
         }.background(Color(.secondarySystemBackground))

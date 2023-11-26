@@ -3,12 +3,8 @@ import SwiftUI
 struct ChartView: View {
     @EnvironmentObject var chartObservable: ChartObservableObject
     @EnvironmentObject var positionsObservable: PositionsObservableObject
-    let positionsView: PositionsView
+    let positionsView: PositionsView = PositionsView()
     private let initChartCommand: InitChartCommand = InitChartCommand()
-     
-    init(_ positionsView: PositionsView) {
-        self.positionsView = positionsView
-    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -52,7 +48,7 @@ struct ChartView: View {
                 
                 if (self.chartObservable.selectedIndex >= 0) {
                     Path { path in
-                        let selected = chartObservable.fullPeriods[self.chartObservable.selectedIndex]
+                        let selected = chartObservable.fullPeriods[self.chartObservable.selectedIndex].fullRect
                         path.addRect(selected)
                     }.stroke(Color(UIColor.systemGray), lineWidth: 2)
                 }
@@ -65,7 +61,7 @@ struct ChartView: View {
                         
                         if (difference != 0) {
                             let zoom: Int32 = difference > 0 ? 10 : -10
-                            ChartUiState.shared.currentOffset = self.chartObservable.zoom(Float(ChartUiState.shared.currentOffset), Float(geometry.size.width), Float(geometry.size.height), zoom)
+                            ChartUiState.shared.currentOffset = self.chartObservable.zoom(Float(geometry.size.width), zoom)
                         }
                         
                         ChartUiState.shared.lastMagnitude = action.magnitude
@@ -85,7 +81,8 @@ struct ChartView: View {
                         }
                     }.onChanged { action in
                         self.chartObservable.endZoom()
-                        ChartUiState.shared.currentOffset = max(CGFloat(self.chartObservable.offsetLimitRange.startIndex), ChartUiState.shared.currentOffset + (ChartUiState.shared.lastDrag ?? 0) - action.translation.width)
+                        ChartUiState.shared.currentOffset = max(CGFloat(self.chartObservable.offsetLimitRange.startIndex),
+                                                                ChartUiState.shared.currentOffset + (ChartUiState.shared.lastDrag ?? 0) - action.translation.width)
                         ChartUiState.shared.currentOffset = min(ChartUiState.shared.currentOffset, CGFloat(self.chartObservable.offsetLimitRange.endIndex))
                         ChartUiState.shared.lastDrag = action.translation.width
                         self.chartObservable.generatePeriodsRects(Float(ChartUiState.shared.currentOffset))

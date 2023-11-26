@@ -10,36 +10,56 @@ struct LeaderboardView: View {
     
     var body: some View {
         ZStack {
+            
             VStack(spacing: 0) {
                 Spacer()
-                Text("Leaderboard")
+                Text(StringConstants.leaderboardTitle)
                 Spacer()
                 
                 ScrollViewReader { proxy in
                     VStack {
                         List {
-                            ForEach(self.leadersObservable.leaderboardUiModel.scores) { model in
-                                HStack {
-                                    Text(model.userName)
+                            
+                            if !self.leadersObservable.leaderboardUiModel.scores.isEmpty &&
+                                !self.leadersObservable.leaderboardUiModel.showProgress {
+                                
+                                Section(header:  HStack {
+                                    Text(StringConstants.name)
                                     Spacer()
-                                    Text(String(model.userScore))
-                                }.listRowBackground(model.backgroundColor).id(model.id)
-                            }
-                        }.listStyle(SidebarListStyle())
-                            .onChange(of: leadersObservable.leaderboardUiModel.userScoreIndex, perform: { _ in
-                                proxy.scrollTo(Int64(self.leadersObservable.leaderboardUiModel.userScoreIndex))
-                            })
-                            .overlay(
-                                Group {
-                                    if (self.leadersObservable.leaderboardUiModel.scores.isEmpty) {
-                                        ZStack() {
-                                            Color(.systemBackground).ignoresSafeArea()
-                                        }
+                                    Text(StringConstants.score)
+                                }) {
+                                    ForEach(self.leadersObservable.leaderboardUiModel.scores) { model in
+                                        HStack {
+                                            Text(model.userName)
+                                            Spacer()
+                                            Text(String(model.userScore))
+                                        }.listRowBackground(model.backgroundColor).id(model.id)
                                     }
-                                })
+                                }
+                                
+                            }
+                            
+                        }
+                        .onChange(of: leadersObservable.leaderboardUiModel.userScoreIndex, perform: { _ in
+                            proxy.scrollTo(Int64(self.leadersObservable.leaderboardUiModel.userScoreIndex))
+                        })
+                        .overlay(
+                            Group {
+                                if (self.leadersObservable.leaderboardUiModel.scores.isEmpty) {
+                                    ZStack() {
+                                        Color(.systemBackground).ignoresSafeArea()
+                                    }
+                                }
+                            })
+                        .refreshable {
+                            self.leadersObservable.updateScores(self.chartObservable.currentPriceCents())
+                            await Task.sleep(1_000_000_000)
+                        }
+                        
                     }
                 }
             }
+            
             
             if self.leadersObservable.leaderboardUiModel.showProgress {
                 ProgressView()
@@ -49,15 +69,17 @@ struct LeaderboardView: View {
         
         .overlay(self.leadersObservable.leaderboardUiModel.showSignupPrompt ? joinPrompt : nil, alignment: .bottom)
         .onAppear(perform: {
-            self.leadersObservable.updateScores(self.chartObservable.currentPriceCents())
+            if (self.leadersObservable.leaderboardUiModel.scores.isEmpty) {
+                self.leadersObservable.updateScores(self.chartObservable.currentPriceCents())
+            }
         })
     }
     
     private var joinPrompt: some View {
         VStack() {
-            Text("Join Leaderboard")
+            Text(StringConstants.joinLead)
             
-            TextField("Nickname", text: $username)
+            TextField(StringConstants.nickPrompt, text: $username)
                 .onReceive(Just($username)) { _ in limitText(&username, usernameMaxChars) }
                 .disableAutocorrection(true)
                 .padding()
@@ -66,7 +88,7 @@ struct LeaderboardView: View {
             Button(action: {
                 self.leadersObservable.onUserJoin(username, self.chartObservable.currentPriceCents())
             }) {
-                Text("Join")
+                Text(StringConstants.joinBtnTitle)
             }.padding([.horizontal], 20).padding([.vertical], 10).foregroundColor(.white).background(Color.blue)
                 .clipShape(RoundedRectangle(cornerRadius: 18)).buttonStyle(PlainButtonStyle())
                 .disabled(self.username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

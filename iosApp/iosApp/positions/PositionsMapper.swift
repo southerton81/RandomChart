@@ -14,6 +14,8 @@ func mapToUiPosition(_ position: Position, _ currentPriceCents: Int64) -> UiPosi
     let resultText = decimalToString(resultPct, 2, showSign: true) + "%"
     let resultColor = (resultPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedAscending) ? Color(UIColor.systemRed) : Color(UIColor.systemGreen)
     return UiPosition(id: position.objectID,
+                      startPeriod: position.startPeriod,
+                      endPeriod: position.endPeriod,
                       titleText: titleText,
                       typeText: typeText,
                       tradeResultText: resultText,
@@ -34,6 +36,8 @@ func mapToUiClosedPosition(_ position: Position) -> UiPosition {
     let resultText = decimalToString(resultPct, 2, showSign: true) + "%"
     let resultColor = (resultPct.compare(NSDecimalNumber.zero) == ComparisonResult.orderedAscending) ? Color(UIColor.systemRed) : Color(UIColor.systemGreen)
     return UiPosition(id: position.objectID,
+                      startPeriod: position.startPeriod,
+                      endPeriod: position.endPeriod,
                       titleText: titleText,
                       typeText: typeText,
                       tradeResultText: resultText,

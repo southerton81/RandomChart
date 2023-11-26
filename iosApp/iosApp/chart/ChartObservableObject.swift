@@ -8,9 +8,10 @@ class ChartObservableObject: ObservableObject {
     @Published var downPeriods = Array<CGRect>()
     @Published var fullPeriodsDown = Array<CGRect>()
     @Published var fullPeriodsUp = Array<CGRect>()
-    @Published var fullPeriods = Array<CGRect>()
+    @Published var fullPeriods = Array<ChartPeriod>()
     @Published var selectedIndex = -1
     @Published var description = " "
+    @Published var positionsDecoration = Array<LineDecoration>()
     
     var offsetLimitRange = 0..<Int.max
     
@@ -30,6 +31,7 @@ class ChartObservableObject: ObservableObject {
     }
     
     func setupChart(_ restoreState: Bool = true) async {
+        
         if (restoreState) {
             let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
             if let chartStates = try? c.viewContext.fetch(fetchRequest) {
@@ -55,21 +57,43 @@ class ChartObservableObject: ObservableObject {
     func generatePeriodsRects(_ offset: Float) {
         screenPeriods = PeriodsConvertKt.convertToScreen(allPeriods: periods, periodsOnScreen: chartLenScreen,
                                                          offset: offset, w: self.width, h: self.height)
-        
         if (screenPeriods.count < chartLenScreen / 2) {
             offsetLimitRange = 0..<Int(offset)
         } else {
             offsetLimitRange = 0..<Int.max
         }
         
-        convertToRects()
+        convertScreenPeriodsToRects()
     }
     
-    func zoom(_ offset: Float, _ width: Float, _ height: Float, _ zoomBy: Int32) -> CGFloat {
+    func zoomToPosition(_ startIndex: Int32,  _ endIndex: Int32) -> CGFloat? {
+        let endOrCurrentIndex = endIndex == 0 ? currentPeriodIndex() : endIndex
+        
+        if startIndex >= screenPeriods.first?.periodDto.index ?? 0
+            && endOrCurrentIndex <= screenPeriods.last?.periodDto.index ?? 0 {
+            return nil
+        }
+        
+        chartLenScreen = (endOrCurrentIndex + 4) - (startIndex - 4)
+        let centerPeriodIndex: Int = (Int)(startIndex - 4 + (chartLenScreen / 2))
+        if let centerPeriod = periods[safe: centerPeriodIndex] {
+            let newOffset = PeriodsConvertKt.calculateOffsetForZoom(
+                allPeriods: periods,
+                periodsOnScreen: chartLenScreen,
+                centerAroundPeriod: centerPeriod,
+                w: self.width)
+            generatePeriodsRects(newOffset)
+            return CGFloat(newOffset)
+        } else {
+            return nil
+        }
+    }
+    
+    func zoom(_ width: Float, _ zoomBy: Int32) -> CGFloat {
         chartLenScreen = min(Int32(width / 2), max(10, chartLenScreen - zoomBy))
-        let period = zoomToPeriod ?? findCentralPeriod(width)
-        let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: period, w: width)
-        zoomToPeriod = period
+        let centerPeriod = zoomToPeriod ?? findCentralPeriod(width)
+        let newOffset = PeriodsConvertKt.calculateOffsetForZoom(allPeriods: periods, periodsOnScreen: chartLenScreen, centerAroundPeriod: centerPeriod, w: width)
+        zoomToPeriod = centerPeriod
         generatePeriodsRects(newOffset)
         return CGFloat(newOffset)
     }
@@ -149,7 +173,7 @@ class ChartObservableObject: ObservableObject {
         return screenPeriods.first(where: { p in return (xCenter >= p.x && xCenter <= (p.x + p.w)) })?.periodDto ?? screenPeriods[screenPeriods.count - 1].periodDto
     }
     
-    private func convertToRects() {
+    private func convertScreenPeriodsToRects() {
         self.upPeriods.removeAll()
         self.downPeriods.removeAll()
         self.fullPeriodsUp.removeAll()
@@ -160,12 +184,12 @@ class ChartObservableObject: ObservableObject {
         for screenPeriod in screenPeriods {
             let y: Int32 = (screenPeriod.o < screenPeriod.c) ? screenPeriod.o : screenPeriod.c
             let h: Int32 = max(1, abs(screenPeriod.c - screenPeriod.o))
-            let rc = CGRect(x: CGFloat(screenPeriod.x + 1), y: CGFloat(y), width: CGFloat(screenPeriod.w - 2), height: CGFloat(h))
+            let bodyRc = CGRect(x: CGFloat(screenPeriod.x + 1), y: CGFloat(y), width: CGFloat(screenPeriod.w - 2), height: CGFloat(h))
             
             if (screenPeriod.o <= screenPeriod.c) {
-                self.downPeriods.append(rc)
+                self.downPeriods.append(bodyRc)
             } else {
-                self.upPeriods.append(rc)
+                self.upPeriods.append(bodyRc)
             }
             
             if (screenPeriod.o <= screenPeriod.c) {
@@ -173,8 +197,11 @@ class ChartObservableObject: ObservableObject {
             } else {
                 self.fullPeriodsUp.append(CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)))
             }
-            
-            self.fullPeriods.append(CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)))
+             
+            self.fullPeriods.append(ChartPeriod(
+                index: screenPeriod.periodDto.index,
+                fullRect: CGRect(x: CGFloat(screenPeriod.x), y: CGFloat(screenPeriod.y), width: CGFloat(screenPeriod.w), height: CGFloat(screenPeriod.h)),
+                bodyRect: bodyRc))
         }
     }
 }

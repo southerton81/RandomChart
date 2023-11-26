@@ -12,9 +12,9 @@ struct PositionsView: View {
     private let longCommand: LongCommand
     private let shortCommand: ShortCommand
     private let closeCommand: ClosePositionCommand
-
-    @FetchRequest(fetchRequest: positionsRequest()) private var positions: FetchedResults<Position>
-
+    private let showPositionCommand: ShowPositionCommand = ShowPositionCommand()
+        
+    @FetchRequest(fetchRequest: positionsRequest()) var positions: FetchedResults<Position>
     static func positionsRequest() -> NSFetchRequest<Position> {
         let fetchPostitions = NSFetchRequest<Position>(entityName: "Position")
         fetchPostitions.sortDescriptors = [
@@ -37,21 +37,20 @@ struct PositionsView: View {
         GeometryReader { geometry in
             ZStack {
                 VStack(spacing: 0) {
-                    Text("Total capital " + decimalToString(self.positionsObservable.totalCap, 0) +
-                         "$   Free funds " + decimalToString(self.positionsObservable.freeFunds, 0) + "$")
-                        .font(.footnote)
+                    Text(
+                        String(format: StringConstants.totalCapital,
+                               decimalToString(self.positionsObservable.totalCap, 0),
+                               decimalToString(self.positionsObservable.freeFunds, 0)))
+                    .font(.footnote)
                     
                     if (!self.positions.isEmpty) {
                         positionsList.animation(nil)
                     } else {
                         Color.clear
                     }
-                    
+            
                     buttons.background(Color(.systemBackground)).edgesIgnoringSafeArea(.all).animation(nil)
                     Spacer(minLength: 10)
-                }
-                .onChange(of: self.positionSizePct) { _ in
-                    self.positionsObservable.recalculatePositionSize(self.positionSizePct)
                 }
                 .onAppear {
                     self.positionSizePct = self.positionsObservable.positionSizePct
@@ -63,7 +62,7 @@ struct PositionsView: View {
                 isSliding: self.$isSliding,
                 maxHeight: geometry.size.height * 0.5
             ) {
-                Text("Position size (percent from total capital)").font(Font.callout.weight(.thin))
+                Text(StringConstants.positionSize).font(Font.callout.weight(.thin))
                 Text(String(format: "%.0f", self.positionsObservable.positionSizePct) + "%").font(Font.headline.weight(.black))
                 Text(decimalToString(self.positionsObservable.positionSize, 0) + "$").font(Font.callout.weight(.thin))
                 Slider(value: self.$positionSizePct, in: self.positionSizePctRange, step: 1) { _ in
@@ -77,33 +76,91 @@ struct PositionsView: View {
     }
     
     var positionsList: some View {
-        List(self.positions
-            .map({ (position) -> UiPosition in mapToUiPosition(position, self.chartObservable.currentPriceCents())}), id: \.self)
-        { uiPosition in
-            HStack {
-                Text(uiPosition.titleText)
-                Spacer()
-                Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
-                Spacer()
-                Text(uiPosition.typeText)
-              
-                if (uiPosition.action != nil) {
-                    Spacer()
-                    Button(action: {
-                        closeCommand.execute(positionsObservable, chartObservable, uiPosition.id)
-                    }) {
-                        Text(uiPosition.action?.caption ?? "")
-                    }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius:18))
-                         .disabled(self.positionsObservable.calculating)
+        List {
+            if let openPositions = getOpenPositions() {
+                Section(header:  HStack {
+                    Text(StringConstants.openPositions)
+                }) {
+                    ForEach(openPositions, id: \.self) { uiPosition in
+                        HStack {
+                            Text(uiPosition.titleText)
+                            Spacer()
+                            Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
+                            Spacer()
+                            Text(uiPosition.typeText)
+                            
+                            if (uiPosition.action != nil) {
+                                Spacer()
+                                Button(action: {
+                                    closeCommand.execute(positionsObservable, chartObservable, uiPosition.id)
+                                }) {
+                                    Text(uiPosition.action?.caption ?? "")
+                                }.padding(10).foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius:18))
+                                    .disabled(self.positionsObservable.calculating)
+                            }
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showPositionCommand.execute(self.chartObservable,
+                                                        uiPosition.startPeriod, uiPosition.endPeriod)
+                
+                        }
+                    }
                 }
             }
-        }.listStyle(SidebarListStyle())
+            
+            if let closedPositions = getClosedPositions() {
+                Section(header:  HStack {
+                    Text(StringConstants.closedPositions)
+                }) {
+                    ForEach(closedPositions, id: \.self) { uiPosition in
+                        HStack {
+                            Text(uiPosition.titleText)
+                            Spacer()
+                            Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
+                            Spacer()
+                            Text(uiPosition.typeText)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            showPositionCommand.execute(self.chartObservable,
+                                                        uiPosition.startPeriod, uiPosition.endPeriod)
+                
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private func getOpenPositions() -> Array<UiPosition>? {
+        let openPositions = self.positions.filter({ !$0.closed })
+        if (openPositions.isEmpty) {
+            return nil
+        }
+        else {
+            return openPositions.map({ (position) -> UiPosition in
+                mapToUiPosition(position, self.chartObservable.currentPriceCents())
+            })
+        }
+    }
+    
+    private func getClosedPositions() -> Array<UiPosition>? {
+        let closedPositions = self.positions.filter({ $0.closed })
+        if (closedPositions.isEmpty) {
+            return nil
+        }
+        else {
+            return closedPositions.map({ (position) -> UiPosition in
+                mapToUiPosition(position, self.chartObservable.currentPriceCents())
+            })
+        }
     }
     
     var buttons: some View {
         HStack {
             Button(action: { self.bottomSheetShown = true }) {
-                Text("Size: " + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
+                Text(StringConstants.sizeTitle + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
             }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemIndigo)).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Spacer()
@@ -111,21 +168,21 @@ struct PositionsView: View {
             Button(action: {
                 shortCommand.execute(positionsObservable, chartObservable)
             }) {
-                Text("Short")
+                Text(StringConstants.shortBtnTitle)
             }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color(UIColor.systemRed)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 longCommand.execute(positionsObservable, chartObservable)
             }) {
-                Text("Long")
+                Text(StringConstants.longBtnTitle)
             }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemGreen)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 nextCommand.execute(positionsObservable, chartObservable)
             }) {
-                Text("Next")
+                Text(StringConstants.nextBtnTitle)
             }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(self.positionsObservable.calculating)
         }

@@ -13,6 +13,9 @@
 		7555FF8B242A565B00829871 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7555FF89242A565B00829871 /* LaunchScreen.storyboard */; };
 		7555FF96242A565B00829871 /* iosAppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FF95242A565B00829871 /* iosAppTests.swift */; };
 		7555FFA1242A565B00829871 /* iosAppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7555FFA0242A565B00829871 /* iosAppUITests.swift */; };
+		9A02CAE92A5B195E00BF6E36 /* LeaderboardEndpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A02CAE82A5B195E00BF6E36 /* LeaderboardEndpoints.swift */; };
+		9A037C232A68780D00A86C12 /* StringConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A037C222A68780D00A86C12 /* StringConstants.swift */; };
+		9A037C252A6879C400A86C12 /* en.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 9A037C242A6879C400A86C12 /* en.lproj */; };
 		9A0E8F4128BBBDE200AE3EB2 /* Command.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0E8F4028BBBDE200AE3EB2 /* Command.swift */; };
 		9A0E8F4328BBBE1200AE3EB2 /* NextCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0E8F4228BBBE1200AE3EB2 /* NextCommand.swift */; };
 		9A0E8F4628BBE51A00AE3EB2 /* LongCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A0E8F4528BBE51A00AE3EB2 /* LongCommand.swift */; };
@@ -31,14 +34,17 @@
 		9A60CB80272B2136004C2726 /* ChartObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A60CB7F272B2136004C2726 /* ChartObservableObject.swift */; };
 		9A6AC99728A15ED100FE98E1 /* URLSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6AC99628A15ED000FE98E1 /* URLSession.swift */; };
 		9A71CB5A2870F29800A34D98 /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A71CB592870F29800A34D98 /* MainTabView.swift */; };
+		9A7274572B138C8500BCA8CA /* LineDecoration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A7274562B138C8500BCA8CA /* LineDecoration.swift */; };
 		9A81E0DA292FE097001DD835 /* InitChartCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A81E0D9292FE097001DD835 /* InitChartCommand.swift */; };
 		9A87FE3128D89DB1002BE66C /* PriceFormatUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A87FE3028D89DB1002BE66C /* PriceFormatUtils.swift */; };
 		9A87FE3428D89F85002BE66C /* ShortPositionsProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A87FE3328D89F85002BE66C /* ShortPositionsProcessor.swift */; };
 		9A8A623D27A5D6C3002C4967 /* PositionsObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8A623C27A5D6C3002C4967 /* PositionsObservableObject.swift */; };
 		9A8ED6D628A3B659008E8C2D /* LeaderboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A8ED6D528A3B659008E8C2D /* LeaderboardModels.swift */; };
 		9A9045BC288B1E8B005814BC /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A9045BB288B1E8B005814BC /* Keychain.swift */; };
+		9A90DC8C2AEDB78F0022C20C /* CollectionExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A90DC8B2AEDB78F0022C20C /* CollectionExtensions.swift */; };
 		9A92F00828A92CE30025FDBB /* PositionsCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A92F00728A92CE30025FDBB /* PositionsCalculator.swift */; };
 		9A96216229E43EE50064C786 /* ProfileObservableObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A96216129E43EE50064C786 /* ProfileObservableObject.swift */; };
+		9A9F5E9C2A7FE8910020B908 /* ChartPeriod.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A9F5E9B2A7FE8910020B908 /* ChartPeriod.swift */; };
 		9AA4D6F129BE8320003F149B /* ChartUiState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA4D6F029BE8320003F149B /* ChartUiState.swift */; };
 		9AA5306B29E02BCC0052D245 /* PositionSizeBottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA5306A29E02BCC0052D245 /* PositionSizeBottomSheetView.swift */; };
 		9AA5306E29E056920052D245 /* PositionSizeUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AA5306D29E056920052D245 /* PositionSizeUserDefaults.swift */; };
@@ -51,6 +57,7 @@
 		9ABEFEB12858AD7700F8EF80 /* UiPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB02858AD7700F8EF80 /* UiPosition.swift */; };
 		9ABEFEB32858ADAA00F8EF80 /* UiActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB22858ADAA00F8EF80 /* UiActionButton.swift */; };
 		9ABEFEB52858B1AD00F8EF80 /* PositionsMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB42858B1AD00F8EF80 /* PositionsMapper.swift */; };
+		9AFBCBE02A80510E00924FB6 /* ShowPositionCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AFBCBDF2A80510E00924FB6 /* ShowPositionCommand.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -83,6 +90,9 @@
 		7555FF9C242A565B00829871 /* iosAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = iosAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7555FFA0242A565B00829871 /* iosAppUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosAppUITests.swift; sourceTree = "<group>"; };
 		7555FFA2242A565B00829871 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9A02CAE82A5B195E00BF6E36 /* LeaderboardEndpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardEndpoints.swift; sourceTree = "<group>"; };
+		9A037C222A68780D00A86C12 /* StringConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringConstants.swift; sourceTree = "<group>"; };
+		9A037C242A6879C400A86C12 /* en.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = en.lproj; sourceTree = "<group>"; };
 		9A0E8F4028BBBDE200AE3EB2 /* Command.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Command.swift; sourceTree = "<group>"; };
 		9A0E8F4228BBBE1200AE3EB2 /* NextCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextCommand.swift; sourceTree = "<group>"; };
 		9A0E8F4528BBE51A00AE3EB2 /* LongCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongCommand.swift; sourceTree = "<group>"; };
@@ -101,14 +111,17 @@
 		9A60CB7F272B2136004C2726 /* ChartObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartObservableObject.swift; sourceTree = "<group>"; };
 		9A6AC99628A15ED000FE98E1 /* URLSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSession.swift; sourceTree = "<group>"; };
 		9A71CB592870F29800A34D98 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
+		9A7274562B138C8500BCA8CA /* LineDecoration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineDecoration.swift; sourceTree = "<group>"; };
 		9A81E0D9292FE097001DD835 /* InitChartCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitChartCommand.swift; sourceTree = "<group>"; };
 		9A87FE3028D89DB1002BE66C /* PriceFormatUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFormatUtils.swift; sourceTree = "<group>"; };
 		9A87FE3328D89F85002BE66C /* ShortPositionsProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortPositionsProcessor.swift; sourceTree = "<group>"; };
 		9A8A623C27A5D6C3002C4967 /* PositionsObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsObservableObject.swift; sourceTree = "<group>"; };
 		9A8ED6D528A3B659008E8C2D /* LeaderboardModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardModels.swift; sourceTree = "<group>"; };
 		9A9045BB288B1E8B005814BC /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
+		9A90DC8B2AEDB78F0022C20C /* CollectionExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CollectionExtensions.swift; sourceTree = "<group>"; };
 		9A92F00728A92CE30025FDBB /* PositionsCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsCalculator.swift; sourceTree = "<group>"; };
 		9A96216129E43EE50064C786 /* ProfileObservableObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileObservableObject.swift; sourceTree = "<group>"; };
+		9A9F5E9B2A7FE8910020B908 /* ChartPeriod.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartPeriod.swift; sourceTree = "<group>"; };
 		9AA4D6F029BE8320003F149B /* ChartUiState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartUiState.swift; sourceTree = "<group>"; };
 		9AA5306A29E02BCC0052D245 /* PositionSizeBottomSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionSizeBottomSheetView.swift; sourceTree = "<group>"; };
 		9AA5306D29E056920052D245 /* PositionSizeUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionSizeUserDefaults.swift; sourceTree = "<group>"; };
@@ -121,6 +134,7 @@
 		9ABEFEB02858AD7700F8EF80 /* UiPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiPosition.swift; sourceTree = "<group>"; };
 		9ABEFEB22858ADAA00F8EF80 /* UiActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiActionButton.swift; sourceTree = "<group>"; };
 		9ABEFEB42858B1AD00F8EF80 /* PositionsMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsMapper.swift; sourceTree = "<group>"; };
+		9AFBCBDF2A80510E00924FB6 /* ShowPositionCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShowPositionCommand.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -151,6 +165,7 @@
 		7555FF72242A565900829871 = {
 			isa = PBXGroup;
 			children = (
+				9A037C242A6879C400A86C12 /* en.lproj */,
 				7555FF7D242A565900829871 /* iosApp */,
 				7555FF94242A565B00829871 /* iosAppTests */,
 				7555FF9F242A565B00829871 /* iosAppUITests */,
@@ -185,6 +200,7 @@
 				7555FF86242A565B00829871 /* Preview Content */,
 				9A4C4765279C8DF5006F002E /* Data.xcdatamodeld */,
 				9AA9C8C828FAEF60003AD958 /* ChartApp.swift */,
+				9A037C222A68780D00A86C12 /* StringConstants.swift */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -222,6 +238,14 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		9A02CAE72A5B194600BF6E36 /* endpoint */ = {
+			isa = PBXGroup;
+			children = (
+				9A02CAE82A5B195E00BF6E36 /* LeaderboardEndpoints.swift */,
+			);
+			path = endpoint;
+			sourceTree = "<group>";
+		};
 		9A0E8F4428BBE4E000AE3EB2 /* commands */ = {
 			isa = PBXGroup;
 			children = (
@@ -230,6 +254,7 @@
 				9A0E8F4728BBE53300AE3EB2 /* ShortCommand.swift */,
 				9A0E8F4928BBE56B00AE3EB2 /* ClosePositionCommand.swift */,
 				9A81E0D9292FE097001DD835 /* InitChartCommand.swift */,
+				9AFBCBDF2A80510E00924FB6 /* ShowPositionCommand.swift */,
 			);
 			path = commands;
 			sourceTree = "<group>";
@@ -238,6 +263,7 @@
 			isa = PBXGroup;
 			children = (
 				9A5942DB2932C7A800220AD5 /* Period.swift */,
+				9A9F5E9B2A7FE8910020B908 /* ChartPeriod.swift */,
 			);
 			path = models;
 			sourceTree = "<group>";
@@ -255,6 +281,7 @@
 		9A5A68132886EBD9009323C2 /* leaderboard */ = {
 			isa = PBXGroup;
 			children = (
+				9A02CAE72A5B194600BF6E36 /* endpoint */,
 				9A8ED6D728A3B686008E8C2D /* models */,
 				9A5A68142886ECF3009323C2 /* LeaderboardView.swift */,
 				9A5A68162886F70D009323C2 /* LeadersObservableObject.swift */,
@@ -293,6 +320,7 @@
 				9A2297D628B160C000AEE424 /* NSDecimalNumberExtensions.swift */,
 				9A0E8F4028BBBDE200AE3EB2 /* Command.swift */,
 				9AAC090629059D220004775D /* Constants.swift */,
+				9A90DC8B2AEDB78F0022C20C /* CollectionExtensions.swift */,
 			);
 			path = common;
 			sourceTree = "<group>";
@@ -352,6 +380,7 @@
 				9A60CB7F272B2136004C2726 /* ChartObservableObject.swift */,
 				7555FF82242A565900829871 /* ChartView.swift */,
 				9AA4D6F029BE8320003F149B /* ChartUiState.swift */,
+				9A7274562B138C8500BCA8CA /* LineDecoration.swift */,
 			);
 			path = chart;
 			sourceTree = "<group>";
@@ -461,6 +490,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A037C252A6879C400A86C12 /* en.lproj in Resources */,
 				7555FF8B242A565B00829871 /* LaunchScreen.storyboard in Resources */,
 				7555FF88242A565B00829871 /* Preview Assets.xcassets in Resources */,
 				7555FF85242A565B00829871 /* Assets.xcassets in Resources */,
@@ -515,11 +545,13 @@
 				9A87FE3128D89DB1002BE66C /* PriceFormatUtils.swift in Sources */,
 				9A0E8F4328BBBE1200AE3EB2 /* NextCommand.swift in Sources */,
 				9A0E8F4828BBE53300AE3EB2 /* ShortCommand.swift in Sources */,
+				9A037C232A68780D00A86C12 /* StringConstants.swift in Sources */,
 				9A60CB80272B2136004C2726 /* ChartObservableObject.swift in Sources */,
 				9AA9C8C928FAEF60003AD958 /* ChartApp.swift in Sources */,
 				9A4C4769279D9A8B006F002E /* PositionsView.swift in Sources */,
 				9A96216229E43EE50064C786 /* ProfileObservableObject.swift in Sources */,
 				9ABEFEB12858AD7700F8EF80 /* UiPosition.swift in Sources */,
+				9A7274572B138C8500BCA8CA /* LineDecoration.swift in Sources */,
 				9A8A623D27A5D6C3002C4967 /* PositionsObservableObject.swift in Sources */,
 				9A5A68172886F70D009323C2 /* LeadersObservableObject.swift in Sources */,
 				9AAAAA4728F59B3A00FA8D2A /* AppRootView.swift in Sources */,
@@ -527,6 +559,7 @@
 				9A2297D728B160C000AEE424 /* NSDecimalNumberExtensions.swift in Sources */,
 				9A87FE3428D89F85002BE66C /* ShortPositionsProcessor.swift in Sources */,
 				9AA5307229E345D10052D245 /* ProfileView.swift in Sources */,
+				9A9F5E9C2A7FE8910020B908 /* ChartPeriod.swift in Sources */,
 				9AA4D6F129BE8320003F149B /* ChartUiState.swift in Sources */,
 				9A1B1CCD28A2C72900DF555D /* LeaderboardMapper.swift in Sources */,
 				9AA5306E29E056920052D245 /* PositionSizeUserDefaults.swift in Sources */,
@@ -536,6 +569,7 @@
 				9ABEFEB52858B1AD00F8EF80 /* PositionsMapper.swift in Sources */,
 				9A5A68152886ECF3009323C2 /* LeaderboardView.swift in Sources */,
 				9A8ED6D628A3B659008E8C2D /* LeaderboardModels.swift in Sources */,
+				9AFBCBE02A80510E00924FB6 /* ShowPositionCommand.swift in Sources */,
 				9A4C4767279C8DF5006F002E /* Data.xcdatamodeld in Sources */,
 				9A92F00828A92CE30025FDBB /* PositionsCalculator.swift in Sources */,
 				9A5942DC2932C7A800220AD5 /* Period.swift in Sources */,
@@ -547,6 +581,8 @@
 				9A0E8F4A28BBE56B00AE3EB2 /* ClosePositionCommand.swift in Sources */,
 				9A1B1CCF28A2C81E00DF555D /* LeaderboardUiModels.swift in Sources */,
 				9AAAAA4328F4A04200FA8D2A /* ViewExtensions.swift in Sources */,
+				9A90DC8C2AEDB78F0022C20C /* CollectionExtensions.swift in Sources */,
+				9A02CAE92A5B195E00BF6E36 /* LeaderboardEndpoints.swift in Sources */,
 				9A0E8F4128BBBDE200AE3EB2 /* Command.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

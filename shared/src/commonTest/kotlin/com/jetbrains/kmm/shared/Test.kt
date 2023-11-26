@@ -102,48 +102,4 @@ class Test {
             assertTrue(it.y + it.h <= screenHeight)
         }
     }
-
-    @Test
-    fun f() {
-        var nums1 = arrayOf(0,0)
-        var nums2 =  arrayOf(0,0)
-
-        var n = mutableListOf<Int>()
-
-        var i1 = 0
-        var i2 = 0
-        for (i in 0 .. nums1.size + nums2.size) {
-            val n1 = if (i1 < nums1.size)
-                nums1[i1] else null
-
-            val n2 = if (i2 < nums2.size)
-                nums2[i2] else null
-
-            n1?.let {
-                if (n2 == null || n1 <= n2) {
-                    n.add(n1)
-                    i1++
-                }
-            }
-
-            n2?.let {
-                if (n1 == null || n1 > n2) {
-                    n.add(n2)
-                    i2++
-                }
-            }
-        }
-
-        val res: Double = if (n.size % 2 == 0) {
-            (n[n.size / 2] +
-                    (n[n.size / 2] - 1)) / 2.0
-
-        } else {
-            n[n.size / 2].toDouble()
-        }
-
-        var t = 0
-        t = 44
-
-    }
 }

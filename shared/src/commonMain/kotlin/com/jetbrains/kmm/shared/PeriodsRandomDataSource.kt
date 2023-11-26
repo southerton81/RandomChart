@@ -19,7 +19,7 @@ fun getRandomAvailablePeriods(
     basePrice: Long = 5000 // Base price to keep fluctuations in same range
 ): List<PeriodDto> {
     var price = startPrice
-    var gaussian = Gaussian()
+    val gaussian = Gaussian()
     return (0 until count).map {
         val high = price + randomChangeByPercent(basePrice, rand.random, gaussian, rand.random.nextDouble(0.0, 5.0))
         val low = price - randomChangeByPercent(basePrice, rand.random, gaussian, rand.random.nextDouble(0.0, 5.0))

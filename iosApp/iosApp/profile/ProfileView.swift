@@ -20,29 +20,55 @@ struct ProfileView: View {
         ZStack(alignment: .center) {
             VStack(spacing: 0) {
                 Spacer()
-                Text("Trade results history")
+                Text(StringConstants.tradeResult)
                 Spacer()
                 
-                List(getPostitionsList(), id: \.self)
-                { uiPosition in
+                if self.positions.count >= 2 {
+                    captionedList
+                } else {
+                    list
+                }
+                
+                Spacer()
+                Text(StringConstants.version).font(.system(size: 10))
+                Spacer()
+            }
+        }
+    }
+    
+    var list: some View {
+        List {
+            ForEach(getPostitionsList(), id: \.self) { uiPosition in
+                HStack {
+                    Text(uiPosition.titleText)
+                    Spacer()
+                    Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
+                }
+            }
+        }.overlay( Group {
+            if (self.positions.count < 2) {
+                ZStack() {
+                    Color(.secondarySystemBackground).ignoresSafeArea()
+                    Text(StringConstants.noHistory)
+                }
+            }
+        })
+    }
+    
+    var captionedList: some View {
+        List {
+            Section(header:  HStack {
+                Text(StringConstants.capital)
+                Spacer()
+                Text(StringConstants.result)
+            }) {
+                ForEach(getPostitionsList(), id: \.self) { uiPosition in
                     HStack {
                         Text(uiPosition.titleText)
                         Spacer()
                         Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
                     }
-                }.overlay( Group {
-                    if (self.positions.count < 2) {
-                        ZStack() {
-                            Color(.secondarySystemBackground).ignoresSafeArea()
-                            Text("No history available yet...")
-                        }
-                    }
-                })
-                .listStyle(SidebarListStyle())
-                
-                Spacer()
-                Text("Version 1.0").font(.system(size: 10))
-                Spacer()
+                }
             }
         }
     }

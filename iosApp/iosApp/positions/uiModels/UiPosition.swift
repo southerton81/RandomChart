@@ -4,6 +4,8 @@ import CoreData
 
 struct UiPosition: Hashable, Identifiable {
     let id: NSManagedObjectID
+    let startPeriod: Int32
+    let endPeriod: Int32
     let titleText: String
     let typeText: String
     let tradeResultText: String

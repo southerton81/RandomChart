@@ -74,9 +74,8 @@ fun calculateOffsetForZoom(
     centerAroundPeriod: PeriodDto,
     w: Float
 ): Float {
-    val periodsCount = periodsOnScreen.coerceAtLeast(10)
-    val periodWidth = calculatePeriodWidth(w, periodsCount)
-    val startPeriodIndex = (centerAroundPeriod.index - (periodsCount / 2))
+    val periodWidth = calculatePeriodWidth(w, periodsOnScreen)
+    val startPeriodIndex = (centerAroundPeriod.index - (periodsOnScreen / 2))
         .coerceIn(0, allPeriods.size - 1L)
     return startPeriodIndex * periodWidth
 }
