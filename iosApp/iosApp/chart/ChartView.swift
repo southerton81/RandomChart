@@ -1,10 +1,19 @@
-import SwiftUI 
+import SwiftUI
+import CoreData
 
 struct ChartView: View {
     @EnvironmentObject var chartObservable: ChartObservableObject
     @EnvironmentObject var positionsObservable: PositionsObservableObject
     let positionsView: PositionsView = PositionsView()
     private let initChartCommand: InitChartCommand = InitChartCommand()
+    @FetchRequest(fetchRequest: positionsRequest()) var positions: FetchedResults<Position>
+    
+    static func positionsRequest() -> NSFetchRequest<Position> {
+        let fetchPostitions = NSFetchRequest<Position>(entityName: "Position")
+        fetchPostitions.sortDescriptors = []
+        fetchPostitions.predicate = NSPredicate(format: "%K != -1", #keyPath(Position.startPeriod))
+        return fetchPostitions
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -46,6 +55,13 @@ struct ChartView: View {
                     path.addRects(chartObservable.downPeriods)
                 }.fill(Color(UIColor.systemRed))
                 
+                Path { path in
+                    self.chartObservable.positionsDecoration.forEach { lineDecoration in
+                        path.move(to: lineDecoration.start)
+                        path.addLine(to: lineDecoration.end)
+                    }
+                }.stroke(Color(UIColor.systemGreen), lineWidth: 3)
+                
                 if (self.chartObservable.selectedIndex >= 0) {
                     Path { path in
                         let selected = chartObservable.fullPeriods[self.chartObservable.selectedIndex].fullRect
@@ -61,7 +77,7 @@ struct ChartView: View {
                         
                         if (difference != 0) {
                             let zoom: Int32 = difference > 0 ? 10 : -10
-                            ChartUiState.shared.currentOffset = self.chartObservable.zoom(Float(geometry.size.width), zoom)
+                            ChartUiState.shared.currentOffset = self.chartObservable.zoom(Float(geometry.size.width), zoom, positions)
                         }
                         
                         ChartUiState.shared.lastMagnitude = action.magnitude
@@ -85,12 +101,16 @@ struct ChartView: View {
                                                                 ChartUiState.shared.currentOffset + (ChartUiState.shared.lastDrag ?? 0) - action.translation.width)
                         ChartUiState.shared.currentOffset = min(ChartUiState.shared.currentOffset, CGFloat(self.chartObservable.offsetLimitRange.endIndex))
                         ChartUiState.shared.lastDrag = action.translation.width
-                        self.chartObservable.generatePeriodsRects(Float(ChartUiState.shared.currentOffset))
+                        self.chartObservable.generatePeriodsRects(Float(ChartUiState.shared.currentOffset), positions)
                     })
             .task {
                 if (self.chartObservable.isChartEmpty()) {
                     self.chartObservable.setSize(Float(geometry.size.width), Float(geometry.size.height))
-                    await initChartCommand.execute(positionsObservable, chartObservable, restoreState: true)
+                    await initChartCommand.execute(
+                        positionsObservable,
+                        chartObservable,
+                        positions,
+                        restoreState: true)
                 }
             }
         }

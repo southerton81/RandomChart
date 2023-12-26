@@ -1,12 +1,14 @@
 import Foundation
+import SwiftUI
 
 class InitChartCommand : Command {
     func execute(_ positionsObservable: PositionsObservableObject,
                  _ chartObservable: ChartObservableObject,
+                 _ positions: FetchedResults<Position>,
                  restoreState: Bool) async {
         await chartObservable.setupChart(restoreState)
         await MainActor.run {
-            ChartUiState.shared.currentOffset = chartObservable.next()
+            ChartUiState.shared.currentOffset = chartObservable.next(positions)
         }
         await chartObservable.saveChartState()
         

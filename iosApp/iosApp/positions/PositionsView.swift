@@ -12,7 +12,7 @@ struct PositionsView: View {
     private let longCommand: LongCommand
     private let shortCommand: ShortCommand
     private let closeCommand: ClosePositionCommand
-    private let showPositionCommand: ShowPositionCommand = ShowPositionCommand()
+    private let showPositionCommand: ShowPositionCommand
         
     @FetchRequest(fetchRequest: positionsRequest()) var positions: FetchedResults<Position>
     static func positionsRequest() -> NSFetchRequest<Position> {
@@ -31,6 +31,7 @@ struct PositionsView: View {
         self.longCommand = LongCommand()
         self.shortCommand = ShortCommand()
         self.closeCommand = ClosePositionCommand()
+        self.showPositionCommand = ShowPositionCommand()
     }
     
     var body: some View {
@@ -102,8 +103,9 @@ struct PositionsView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             showPositionCommand.execute(self.chartObservable,
-                                                        uiPosition.startPeriod, uiPosition.endPeriod)
-                
+                                                        uiPosition.startPeriod,
+                                                        uiPosition.endPeriod,
+                                                        positions)
                         }
                     }
                 }
@@ -124,7 +126,9 @@ struct PositionsView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             showPositionCommand.execute(self.chartObservable,
-                                                        uiPosition.startPeriod, uiPosition.endPeriod)
+                                                        uiPosition.startPeriod,
+                                                        uiPosition.endPeriod,
+                                                        positions)
                 
                         }
                     }
@@ -180,7 +184,7 @@ struct PositionsView: View {
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
-                nextCommand.execute(positionsObservable, chartObservable)
+                nextCommand.execute(positionsObservable, chartObservable, positions)
             }) {
                 Text(StringConstants.nextBtnTitle)
             }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius: 20))

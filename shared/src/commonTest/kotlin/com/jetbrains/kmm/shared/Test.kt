@@ -71,14 +71,14 @@ class Test {
     @Test
     fun testScreenConvertOffset() {
         val periodDto = getRandomAvailablePeriods(5000, Rand(190), 300)
-        val periodsScreen = convertToScreen(periodDto, 150, 0f, 400f, 320f)
+        val periodsScreen = convertToScreen(periodDto, 150, 0f, 400f, 320f).screenPeriods
         assertEquals(periodsScreen.size, 151)
     }
 
     @Test
     fun testScreenConvertHorizontal() {
         val periodDto = getRandomAvailablePeriods(5000, Rand(190), 100)
-        val periodsScreen = convertToScreen(periodDto, 2, 50f, 400f, 320f)
+        val periodsScreen = convertToScreen(periodDto, 2, 50f, 400f, 320f).screenPeriods
         assertEquals(periodsScreen.size, 3)
 
         assertEquals(periodsScreen[0].x, -50f)
@@ -95,7 +95,7 @@ class Test {
     fun testScreenConvertVertical() {
         val screenHeight = 320f
         val periodDto = getRandomAvailablePeriods(5000, Rand(Random.nextInt()), 200)
-        val periodsScreen = convertToScreen(periodDto, 100, 0f, 400f, screenHeight)
+        val periodsScreen = convertToScreen(periodDto, 100, 0f, 400f, screenHeight).screenPeriods
         assertEquals(periodsScreen.size, 101)
 
         periodsScreen.forEach {

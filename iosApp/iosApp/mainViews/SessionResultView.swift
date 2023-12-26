@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import CoreData
 
 struct SessionResultView: View {
     @EnvironmentObject var positionsObservable: PositionsObservableObject
@@ -7,6 +8,15 @@ struct SessionResultView: View {
     @State var profitPct: String = ""
     @State var profitPctColor: Color = Color.black
     private let initChartCommand: InitChartCommand = InitChartCommand()
+    
+    @FetchRequest(fetchRequest: positionsRequest()) var positions: FetchedResults<Position>
+  
+    static func positionsRequest() -> NSFetchRequest<Position> {
+        let fetchPostitions = NSFetchRequest<Position>(entityName: "Position")
+        fetchPostitions.sortDescriptors = []
+        fetchPostitions.predicate = NSPredicate(format: "%K != -1", #keyPath(Position.startPeriod))
+        return fetchPostitions
+    }
     
     var body: some View {
         VStack {
@@ -29,7 +39,11 @@ struct SessionResultView: View {
             
             Button(action: {
                 Task {
-                    await initChartCommand.execute(positionsObservable, chartObservable, restoreState: false)
+                    await initChartCommand.execute(
+                        positionsObservable,
+                        chartObservable,
+                        positions,
+                        restoreState: false)
                 }
             }) {
                 Text(StringConstants.newChart)

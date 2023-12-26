@@ -10,18 +10,6 @@ struct AppRootView<ChartView: View, ProfileView: View>: View {
     @StateObject var leadersObservable: LeadersObservableObject
     @StateObject var profileObservable: ProfileObservableObject
     
-    @FetchRequest(fetchRequest: positionsRequest()) var positions: FetchedResults<Position>
-    static func positionsRequest() -> NSFetchRequest<Position> {
-        let fetchPostitions = NSFetchRequest<Position>(entityName: "Position")
-        fetchPostitions.sortDescriptors = [
-            NSSortDescriptor(keyPath: \Position.closed, ascending: true),
-            NSSortDescriptor(keyPath: \Position.endPeriod, ascending: false),
-            NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)
-        ]
-        fetchPostitions.predicate = NSPredicate(format: "%K != -1", #keyPath(Position.startPeriod))
-        return fetchPostitions
-    }
-    
     init(_ c: CoreDataInventory, _ mainTabView: MainTabView<ChartView, ProfileView>) {
         self.mainTabView = mainTabView
         self._positionsObservable = StateObject(wrappedValue: PositionsObservableObject(c))

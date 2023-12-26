@@ -2,6 +2,11 @@ package com.jetbrains.kmm.shared
 
 import kotlin.math.*
 
+data class ConvertToScreenResult(
+    val screenPeriods: List<PeriodScreen>,
+    val pixelPrice: Float,
+    val yMin: Long,
+)
 
 data class PeriodScreen(
     val x: Float,
@@ -13,16 +18,15 @@ data class PeriodScreen(
     val periodDto: PeriodDto
 )
 
-
 fun convertToScreen(
     allPeriods: List<PeriodDto>,
     periodsOnScreen: Int,
     offset: Float,
     w: Float,
     h: Float
-): List<PeriodScreen> {
+): ConvertToScreenResult {
     if (periodsOnScreen < 1) {
-        return emptyList()
+        return ConvertToScreenResult(emptyList(), 0f, 0)
     }
 
     val periodWidth = calculatePeriodWidth(w, periodsOnScreen)
@@ -65,7 +69,7 @@ fun convertToScreen(
         )
     }
 
-    return screenPeriods
+    return ConvertToScreenResult(screenPeriods, pixelPrice, yMin)
 }
 
 fun calculateOffsetForZoom(

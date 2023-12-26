@@ -14,6 +14,6 @@ struct LineDecoration : Decoration {
         return Path { path in
             path.move(to: CGPoint(x: start.x, y: start.y))
             path.addLine(to: CGPoint(x: end.x, y: end.y))
-        }.stroke(Color(UIColor.systemGreen), lineWidth: 1)
+        }.stroke(color, lineWidth: 1)
     }
 }
