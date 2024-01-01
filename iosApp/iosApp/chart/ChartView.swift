@@ -57,10 +57,9 @@ struct ChartView: View {
                 
                 Path { path in
                     self.chartObservable.positionsDecoration.forEach { lineDecoration in
-                        path.move(to: lineDecoration.start)
-                        path.addLine(to: lineDecoration.end)
+                        lineDecoration.toPath(&path)
                     }
-                }.stroke(Color(UIColor.systemGreen), lineWidth: 3)
+                }.stroke(Color(UIColor.secondaryLabel), lineWidth: 3)
                 
                 if (self.chartObservable.selectedIndex >= 0) {
                     Path { path in
@@ -76,7 +75,7 @@ struct ChartView: View {
                         let difference = action.magnitude - (ChartUiState.shared.lastMagnitude ?? action.magnitude)
                         
                         if (difference != 0) {
-                            let zoom: Int32 = difference > 0 ? 10 : -10
+                            let zoom: Int32 = difference > 0 ? 2 : -2
                             ChartUiState.shared.currentOffset = self.chartObservable.zoom(Float(geometry.size.width), zoom, positions)
                         }
                         

@@ -11,7 +11,7 @@ class ChartObservableObject: ObservableObject {
     @Published var fullPeriods = Array<ChartPeriod>()
     @Published var selectedIndex = -1
     @Published var description = " "
-    @Published var positionsDecoration = Array<LineDecoration>()
+    @Published var positionsDecoration = Array<Decoration>()
     
     var offsetLimitRange = 0..<Int.max
     
@@ -95,9 +95,18 @@ class ChartObservableObject: ObservableObject {
                             )
                         }
                         
-                        positionsDecoration.append(
-                            LineDecoration(start: start, end: end, color: Color(UIColor.systemGreen))
-                        )
+                        if (start != end) {
+                            positionsDecoration.append(
+                                LineDecoration(start: start, end: end)
+                            )
+                        } else {
+                            let period = periods[Int(startIndex)]
+                            let offset = period.open < period.close ? -CGFloat(offset) : CGFloat(offset)
+                            
+                            positionsDecoration.append(
+                                CircleDecoration(start: CGPoint(x: start.x, y: start.y + offset), end: CGPoint(x: end.x, y: end.y + offset), radius: offset > 0 ? offset - 2 : offset + 2)
+                            )
+                        }
                     }
                 })
             }
