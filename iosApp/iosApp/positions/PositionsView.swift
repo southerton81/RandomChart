@@ -38,11 +38,30 @@ struct PositionsView: View {
         GeometryReader { geometry in
             ZStack {
                 VStack(spacing: 0) {
-                    Text(
-                        String(format: StringConstants.totalCapital,
-                               decimalToString(self.positionsObservable.totalCap, 0),
-                               decimalToString(self.positionsObservable.freeFunds, 0)))
-                    .font(.footnote)
+                    
+                    HStack {
+                        Group {
+                            Text(StringConstants.totalCapital)
+                                .foregroundColor(Color(UIColor.secondaryLabel)).font(Font.callout.weight(.thin))
+                            
+                            Text(decimalToString(self.positionsObservable.totalCap, 0))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .fontWeight(.heavy) +
+                            
+                            Text("$")
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                            
+                            Text(StringConstants.freeCapital)
+                                .foregroundColor(Color(UIColor.secondaryLabel)).font(Font.callout.weight(.thin)) +
+                            
+                            Text(decimalToString(self.positionsObservable.freeFunds, 0))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                .fontWeight(.bold) +
+                            
+                            Text("$")
+                                .foregroundColor(Color(UIColor.secondaryLabel))
+                        }
+                    }
                     
                     if (!self.positions.isEmpty) {
                         positionsList.animation(nil)
@@ -52,6 +71,9 @@ struct PositionsView: View {
             
                     buttons.background(Color(.systemBackground)).edgesIgnoringSafeArea(.all).animation(nil)
                     Spacer(minLength: 10)
+                }
+                .onChange(of: self.positionSizePct) { _ in
+                    self.positionsObservable.recalculatePositionSize(self.positionSizePct)
                 }
                 .onAppear {
                     self.positionSizePct = self.positionsObservable.positionSizePct
@@ -84,11 +106,11 @@ struct PositionsView: View {
                 }) {
                     ForEach(openPositions, id: \.self) { uiPosition in
                         HStack {
-                            Text(uiPosition.titleText)
+                            Text(uiPosition.titleText).font(.system(.body,design: .rounded).weight(.medium))
                             Spacer()
-                            Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
+                            TradeResult(uiPosition.positionValueText, uiPosition.tradeResultText, uiPosition.tradeResultTextColor)
                             Spacer()
-                            Text(uiPosition.typeText)
+                            Text(uiPosition.typeText).font(.system(.body,design: .rounded).weight(.light))
                             
                             if (uiPosition.action != nil) {
                                 Spacer()
@@ -117,11 +139,11 @@ struct PositionsView: View {
                 }) {
                     ForEach(closedPositions, id: \.self) { uiPosition in
                         HStack {
-                            Text(uiPosition.titleText)
+                            Text(uiPosition.titleText).font(.system(.body,design: .rounded).weight(.medium))
                             Spacer()
-                            Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
+                            TradeResult(uiPosition.positionValueText, uiPosition.tradeResultText, uiPosition.tradeResultTextColor)
                             Spacer()
-                            Text(uiPosition.typeText)
+                            Text(uiPosition.typeText).font(.system(.body,design: .rounded).weight(.light))
                         }
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -131,6 +153,31 @@ struct PositionsView: View {
                                                         positions)
                 
                         }
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    struct TradeResult: View {
+        var positionValueText: String = ""
+        var tradeResultText: String = ""
+        var tradeResultTextColor: Color = Color(UIColor.label)
+        
+        init(_ positionValueText: String, _ tradeResultText: String, _ tradeResultTextColor: Color) {
+            self.positionValueText = positionValueText
+            self.tradeResultText = tradeResultText
+            self.tradeResultTextColor = tradeResultTextColor
+        }
+        
+        var body: some View {
+            VStack {
+                Text(tradeResultText).foregroundColor(tradeResultTextColor).font(.system(.body,design: .rounded).weight(.medium))
+                HStack(spacing: 0) {
+                    Group {
+                        Text(positionValueText).foregroundColor(Color(UIColor.secondaryLabel)).font(.footnote)
+                        Text("$").foregroundColor(Color(UIColor.tertiaryLabel)).font(.footnote)
                     }
                 }
             }
@@ -164,30 +211,38 @@ struct PositionsView: View {
     var buttons: some View {
         HStack {
             Button(action: { self.bottomSheetShown = true }) {
-                Text(StringConstants.sizeTitle + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%")
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemIndigo)).clipShape(RoundedRectangle(cornerRadius: 20))
+                Text(StringConstants.sizeTitle + String(format: "%.0f", self.positionsObservable.positionSizePct) + "%").lineLimit(1).minimumScaleFactor(0.8)
+            }.padding().foregroundColor(.white)
+                .font(.system(.body,design: .rounded).weight(.medium))
+                .buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius: 20))
             
             Spacer()
             
             Button(action: {
                 shortCommand.execute(positionsObservable, chartObservable)
             }) {
-                Text(StringConstants.shortBtnTitle)
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()) .background(Color(UIColor.systemRed)).clipShape(RoundedRectangle(cornerRadius: 20))
+                Text(StringConstants.shortBtnTitle).lineLimit(1).minimumScaleFactor(0.8)
+            }.padding().foregroundColor(.white)
+                .font(.system(.body,design: .rounded).weight(.medium))
+                .buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemRed)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 longCommand.execute(positionsObservable, chartObservable)
             }) {
-                Text(StringConstants.longBtnTitle)
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemGreen)).clipShape(RoundedRectangle(cornerRadius: 20))
+                Text(StringConstants.longBtnTitle).lineLimit(1).minimumScaleFactor(0.8)
+            }.padding().foregroundColor(.white)
+                .font(.system(.body,design: .rounded).weight(.medium))
+                .buttonStyle(PlainButtonStyle()).background(Color(UIColor.systemGreen)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(!self.positionsObservable.canOpenNewPos || self.positionsObservable.calculating)
             
             Button(action: {
                 nextCommand.execute(positionsObservable, chartObservable, positions)
             }) {
-                Text(StringConstants.nextBtnTitle)
-            }.padding().foregroundColor(.white).buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius: 20))
+                Text(StringConstants.nextBtnTitle).lineLimit(1).minimumScaleFactor(0.8)
+            }.padding().foregroundColor(.white)
+                .font(.system(.body,design: .rounded).weight(.semibold))
+                .buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor)).clipShape(RoundedRectangle(cornerRadius: 20))
                 .disabled(self.positionsObservable.calculating)
         }
         .padding([.leading, .trailing], 10)

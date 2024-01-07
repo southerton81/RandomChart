@@ -4,7 +4,7 @@ import SwiftUI
 class NextCommand : Command {
     func execute(_ positionsObservableObject: PositionsObservableObject,
                  _ chartObservableObject: ChartObservableObject,
-                 _ positions: FetchedResults<Position>) {
+                 _ positions: FetchedResults<Position>?) {
         ChartUiState.shared.currentOffset = chartObservableObject.next(positions)
         let currentPeriod = chartObservableObject.currentPeriod()
         

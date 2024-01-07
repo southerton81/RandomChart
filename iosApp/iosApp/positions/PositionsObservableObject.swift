@@ -177,9 +177,12 @@ class PositionsObservableObject: ObservableObject {
         }
     }
     
-    func maybeSetEndSessionCondition(_ currentPeriod: Period) -> Bool {
+    func maybeSetEndSessionCondition(_ currentPeriod: Period, reset: Bool = false) -> Bool {
         var endSessionCondition: EndSessionCondition? = nil
         
+        if reset {
+            endSessionCondition = EndSessionCondition.ResetChart
+        }
         if currentPeriod.index >= Constants.sessionLength {
             endSessionCondition = EndSessionCondition.TimeOver
         }
@@ -199,5 +202,6 @@ class PositionsObservableObject: ObservableObject {
         case TimeOver = "Session time is over"
         case FundsOver = "Not enough funds"
         case CompanyOver = "Company is delisted"
+        case ResetChart = "Results"
     }
 }

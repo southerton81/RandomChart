@@ -4,6 +4,10 @@ import CoreData
 
 struct ProfileView: View {
     @EnvironmentObject var profileObservable: ProfileObservableObject
+    @EnvironmentObject var chartObservable: ChartObservableObject
+    @EnvironmentObject var positionsObservable: PositionsObservableObject
+    private let resetCommand: ResetCommand = ResetCommand()
+    @State private var clicked = false
     
     @FetchRequest(fetchRequest: positionsRequest()) private var positions: FetchedResults<Position>
     static func positionsRequest() -> NSFetchRequest<Position> {
@@ -14,7 +18,7 @@ struct ProfileView: View {
         ]
         fetchPostitions.predicate = NSPredicate(format: "%K == -1", #keyPath(Position.startPeriod))
         return fetchPostitions
-    }
+    } 
     
     var body: some View {
         ZStack(alignment: .center) {
@@ -28,11 +32,24 @@ struct ProfileView: View {
                 } else {
                     list
                 }
+                Spacer()
                 
+                Button(action: {
+                    clicked = true
+                    resetCommand.execute(positionsObservable, chartObservable)
+                }) {
+                    Text("End current game").lineLimit(1).minimumScaleFactor(0.8)
+                }.padding().foregroundColor(.white)
+                    .font(.system(.body,design: .rounded).weight(.semibold))
+                    .buttonStyle(PlainButtonStyle()).background(Color(UIColor.tintColor))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .disabled(clicked)
                 Spacer()
                 Text(StringConstants.version).font(.system(size: 10))
                 Spacer()
             }
+        }.onAppear {
+            clicked = false
         }
     }
     

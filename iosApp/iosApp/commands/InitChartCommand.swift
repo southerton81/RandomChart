@@ -6,7 +6,7 @@ class InitChartCommand : Command {
                  _ chartObservable: ChartObservableObject,
                  _ positions: FetchedResults<Position>,
                  restoreState: Bool) async {
-        await chartObservable.setupChart(restoreState)
+        chartObservable.setupChart(restoreState)
         await MainActor.run {
             ChartUiState.shared.currentOffset = chartObservable.next(positions)
         }

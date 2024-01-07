@@ -3,7 +3,8 @@ import Foundation
 enum StringConstants {
     static let closedPositions = NSLocalizedString("Closedpos", comment: "Closed market positions")
     static let openPositions = NSLocalizedString("Openpos", comment: "Open market positions")
-    static let totalCapital = NSLocalizedString("Totalcap", comment: "Capital and free funds")
+    static let totalCapital = NSLocalizedString("Totalcap", comment: "Capital")
+    static let freeCapital = NSLocalizedString("Freecap", comment: "Free funds")
     static let tradeResult = NSLocalizedString("Traderes", comment: "")
     static let version = NSLocalizedString("Version", comment: "")
     static let noHistory = NSLocalizedString("Nohistory", comment: "")

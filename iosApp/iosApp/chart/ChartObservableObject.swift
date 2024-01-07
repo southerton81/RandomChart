@@ -30,18 +30,18 @@ class ChartObservableObject: ObservableObject {
         self.c = c
     }
     
-    func setupChart(_ restoreState: Bool = true) async {
+    func setupChart(_ restoreState: Bool = true) {
         if (restoreState) {
             let fetchRequest = NSFetchRequest<ChartState>(entityName: "ChartState")
             if let chartStates = try? c.viewContext.fetch(fetchRequest) {
                 if (!chartStates.isEmpty) {
                     let chartState = chartStates[0]
-                    await reset(chartState.chartLen, chartState.seed)
+                    reset(chartState.chartLen, chartState.seed)
                     return
                 }
             }
         }
-        await reset()
+        reset()
     }
     
     func isChartEmpty() -> Bool {
@@ -115,7 +115,7 @@ class ChartObservableObject: ObservableObject {
         }
     }
     
-    func generatePeriodsRects(_ offset: Float, _ positions: FetchedResults<Position>) {
+    func generatePeriodsRects(_ offset: Float, _ positions: FetchedResults<Position>?) {
         let convertToScreenResult = PeriodsConvertKt.convertToScreen(allPeriods: periods,
                                                                      periodsOnScreen: chartLenScreen,
                                                                      offset: offset,
@@ -131,10 +131,12 @@ class ChartObservableObject: ObservableObject {
         
         convertScreenPeriodsToRects()
      
-        generatePositionsDecoratations(positions, convertToScreenResult)
+        if let p = positions {
+            generatePositionsDecoratations(p, convertToScreenResult)
+        }
     }
     
-    func zoomToPosition(_ startIndex: Int32,  _ endIndex: Int32, _ positions: FetchedResults<Position>) -> CGFloat? {
+    func zoomToPosition(_ startIndex: Int32,  _ endIndex: Int32, _ positions: FetchedResults<Position>?) -> CGFloat? {
         let endOrCurrentIndex = endIndex == 0 ? currentPeriodIndex() : endIndex
         
         chartLenScreen = (endOrCurrentIndex + 4) - (startIndex - 4)
@@ -165,7 +167,7 @@ class ChartObservableObject: ObservableObject {
         zoomToPeriod = nil
     }
     
-    func next(_ positions: FetchedResults<Position>) -> CGFloat {
+    func next(_ positions: FetchedResults<Position>?) -> CGFloat {
         let lastClose = periods.last!.close
         let nextPeriod = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: lastClose, rand: rand, count: 1, indexFrom: Int32(periods.count), basePrice:
                                                                                 startPrice)[0]
@@ -221,14 +223,14 @@ class ChartObservableObject: ObservableObject {
         return Int32(periods.count - 1)
     }
     
-    private func reset(_ chartLen: Int32 = 100, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) async {
-        await MainActor.run {
+    private func reset(_ chartLen: Int32 = 100, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) {
+       
             self.seed = seed
             self.chartLenScreen = chartLenScreen
             self.rand = Rand(seed: seed)
             self.startPrice = startPrice
             self.periods = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: startPrice, rand: rand, count: chartLen, indexFrom: 0, basePrice: startPrice)
-        }
+       
     }
     
     private func findCentralPeriod(_ width: Float) -> PeriodDto {

@@ -19,21 +19,10 @@ struct AppRootView<ChartView: View, ProfileView: View>: View {
     }
     
     var body: some View {
-        ZStack {
-            if positionsObservable.endSessionCondition != nil {
-                SessionResultView()
-                    .environmentObject(chartObservable)
-                    .environmentObject(positionsObservable)
-                    .zIndex(2)
-                    .deferredRendering(seconds: 1.0)
-            }
-            self.mainTabView
-                .environmentObject(chartObservable)
-                .environmentObject(positionsObservable)
-                .environmentObject(leadersObservable)
-                .environmentObject(profileObservable)
-                .zIndex(1)
-        }
-        .animation(.easeInOut)
+        self.mainTabView
+            .environmentObject(chartObservable)
+            .environmentObject(positionsObservable)
+            .environmentObject(leadersObservable)
+            .environmentObject(profileObservable)
     }
 }

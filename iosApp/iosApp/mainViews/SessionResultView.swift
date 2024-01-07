@@ -3,6 +3,7 @@ import SwiftUI
 import CoreData
 
 struct SessionResultView: View {
+    @Binding var tabSelection: Int
     @EnvironmentObject var positionsObservable: PositionsObservableObject
     @EnvironmentObject var chartObservable: ChartObservableObject
     @State var profitPct: String = ""
@@ -39,6 +40,7 @@ struct SessionResultView: View {
             
             Button(action: {
                 Task {
+                    self.tabSelection = 1
                     await initChartCommand.execute(
                         positionsObservable,
                         chartObservable,

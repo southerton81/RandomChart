@@ -55,6 +55,7 @@
 		9AAAAA4528F4A0AA00FA8D2A /* SessionResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAAAA4428F4A0AA00FA8D2A /* SessionResultView.swift */; };
 		9AAAAA4728F59B3A00FA8D2A /* AppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAAAA4628F59B3A00FA8D2A /* AppRootView.swift */; };
 		9AAC090729059D220004775D /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAC090629059D220004775D /* Constants.swift */; };
+		9AAE436B2B49F146009EFF29 /* ResetCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AAE436A2B49F146009EFF29 /* ResetCommand.swift */; };
 		9ABEFEB12858AD7700F8EF80 /* UiPosition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB02858AD7700F8EF80 /* UiPosition.swift */; };
 		9ABEFEB32858ADAA00F8EF80 /* UiActionButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB22858ADAA00F8EF80 /* UiActionButton.swift */; };
 		9ABEFEB52858B1AD00F8EF80 /* PositionsMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ABEFEB42858B1AD00F8EF80 /* PositionsMapper.swift */; };
@@ -135,6 +136,7 @@
 		9AAAAA4428F4A0AA00FA8D2A /* SessionResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionResultView.swift; sourceTree = "<group>"; };
 		9AAAAA4628F59B3A00FA8D2A /* AppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRootView.swift; sourceTree = "<group>"; };
 		9AAC090629059D220004775D /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		9AAE436A2B49F146009EFF29 /* ResetCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResetCommand.swift; sourceTree = "<group>"; };
 		9ABEFEB02858AD7700F8EF80 /* UiPosition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiPosition.swift; sourceTree = "<group>"; };
 		9ABEFEB22858ADAA00F8EF80 /* UiActionButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UiActionButton.swift; sourceTree = "<group>"; };
 		9ABEFEB42858B1AD00F8EF80 /* PositionsMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionsMapper.swift; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				9A0E8F4928BBE56B00AE3EB2 /* ClosePositionCommand.swift */,
 				9A81E0D9292FE097001DD835 /* InitChartCommand.swift */,
 				9AFBCBDF2A80510E00924FB6 /* ShowPositionCommand.swift */,
+				9AAE436A2B49F146009EFF29 /* ResetCommand.swift */,
 			);
 			path = commands;
 			sourceTree = "<group>";
@@ -576,6 +579,7 @@
 				9A2297D728B160C000AEE424 /* NSDecimalNumberExtensions.swift in Sources */,
 				9A87FE3428D89F85002BE66C /* ShortPositionsProcessor.swift in Sources */,
 				9AA5307229E345D10052D245 /* ProfileView.swift in Sources */,
+				9AAE436B2B49F146009EFF29 /* ResetCommand.swift in Sources */,
 				9A9F5E9C2A7FE8910020B908 /* ChartPeriod.swift in Sources */,
 				9AA4D6F129BE8320003F149B /* ChartUiState.swift in Sources */,
 				9A1B1CCD28A2C72900DF555D /* LeaderboardMapper.swift in Sources */,

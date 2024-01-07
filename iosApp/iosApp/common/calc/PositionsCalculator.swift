@@ -6,6 +6,15 @@ struct FundsResult {
     let freeCap: NSDecimalNumber
 }
 
+let roundingBehaviorForTotalFunds = NSDecimalNumberHandler(
+    roundingMode: .plain,
+    scale: 0,
+    raiseOnExactness: false,
+    raiseOnOverflow: false,
+    raiseOnUnderflow: false,
+    raiseOnDivideByZero: false
+)
+
 func calculateTotalFunds(_ c: CoreDataInventory, _ currentPriceCent: Int64) async -> FundsResult {
     return await c.performRead { (c) -> FundsResult in
         let fetchRequest = NSFetchRequest<Position>(entityName: "Position")
@@ -36,8 +45,8 @@ func calculateTotalFunds(_ c: CoreDataInventory, _ currentPriceCent: Int64) asyn
                     result.adding(next)
                 }
             
-            return FundsResult(totalCap: closedPositionsValue.subtracting(positionsCost).adding(openPositionsValue),
-                               freeCap: closedPositionsValue.subtracting(positionsCost))
+            return FundsResult(totalCap: closedPositionsValue.subtracting(positionsCost).adding(openPositionsValue, withBehavior: roundingBehaviorForTotalFunds),
+                               freeCap: closedPositionsValue.subtracting(positionsCost, withBehavior: roundingBehaviorForTotalFunds))
         }
         
         return FundsResult(totalCap: NSDecimalNumber.zero, freeCap: NSDecimalNumber.zero)
@@ -90,12 +99,21 @@ func getDifferenceInPct(_ value1: NSDecimalNumber, _ value2: NSDecimalNumber) ->
     }
 }
 
-func getPositionResultInPct(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {
+func getPositionResult(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {
     var positionValue = NSDecimalNumber.zero
     if (p.closed) {
         positionValue = calculateClosedPostionValue(p)
     } else {
         positionValue = calculateOpenPositionValue(currentPriceCents, p)
     }
+    return positionValue
+}
+
+func getPositionResultInPct(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {
+    var positionValue = getPositionResult(p, currentPriceCents)
     return getDifferenceInPct(p.totalSpent ?? NSDecimalNumber.zero, positionValue)
+}
+
+func getPositionResultInPct(_ totalSpent: NSDecimalNumber?, _ positionValue: NSDecimalNumber) -> NSDecimalNumber {
+    return getDifferenceInPct(totalSpent ?? NSDecimalNumber.zero, positionValue)
 }

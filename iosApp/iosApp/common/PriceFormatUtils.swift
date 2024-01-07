@@ -14,13 +14,17 @@ public func int64PriceToString(_ price: Int64) -> String {
 
 public func decimalToString(_ value: NSDecimalNumber, _ minimumFractionDigits: Int = 2, showSign: Bool = false) -> String {
     let fmt = NumberFormatter()
-    fmt.numberStyle = .none
+    fmt.numberStyle = .decimal
+    fmt.maximumFractionDigits = minimumFractionDigits
     fmt.minimumFractionDigits = minimumFractionDigits
     fmt.minimumIntegerDigits = 1
     fmt.roundingMode = .halfDown
+    fmt.groupingSeparator = "\u{2009}"
+     
     if (showSign) {
         fmt.positivePrefix = fmt.plusSign
     }
-    return fmt.string(from: value) ?? "0.00"
+    
+    return fmt.string(from: value) ?? "0"
 }
 

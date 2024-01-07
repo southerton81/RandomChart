@@ -17,7 +17,7 @@ struct ChartView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            Text(self.chartObservable.description).font(.footnote)
+            Text(self.chartObservable.description).font(.system(.footnote, design: .rounded))
                 .frame(maxWidth: .infinity)
                 .background(Color(UIColor.systemBackground))
             chartView()

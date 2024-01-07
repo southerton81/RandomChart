@@ -8,6 +8,7 @@ struct UiPosition: Hashable, Identifiable {
     let endPeriod: Int32
     let titleText: String
     let typeText: String
+    let positionValueText: String
     let tradeResultText: String
     let tradeResultTextColor: Color
     let action: UiActionButton?
