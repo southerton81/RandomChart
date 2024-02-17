@@ -223,14 +223,12 @@ class ChartObservableObject: ObservableObject {
         return Int32(periods.count - 1)
     }
     
-    private func reset(_ chartLen: Int32 = 100, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 75, _ startPrice: Int64 = 5000) {
-       
-            self.seed = seed
-            self.chartLenScreen = chartLenScreen
-            self.rand = Rand(seed: seed)
-            self.startPrice = startPrice
-            self.periods = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: startPrice, rand: rand, count: chartLen, indexFrom: 0, basePrice: startPrice)
-       
+    private func reset(_ chartLen: Int32 = 200, _ seed: Int32 = Int32(Int.random(in: 0..<Int(INT32_MAX))), _ chartLenScreen: Int32 = 85, _ startPrice: Int64 = 5000) {
+        self.seed = seed
+        self.chartLenScreen = chartLenScreen
+        self.rand = Rand(seed: seed)
+        self.startPrice = startPrice
+        self.periods = PeriodsRandomDataSourceKt.getRandomAvailablePeriods(startPrice: startPrice, rand: rand, count: chartLen, indexFrom: 0, basePrice: startPrice)
     }
     
     private func findCentralPeriod(_ width: Float) -> PeriodDto {

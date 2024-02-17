@@ -99,7 +99,7 @@ func getDifferenceInPct(_ value1: NSDecimalNumber, _ value2: NSDecimalNumber) ->
     }
 }
 
-func getPositionResult(_ p: Position, _ currentPriceCents: Int64) -> NSDecimalNumber {
+func getPositionResult(_ p: Position, _ currentPriceCents: Int64 = 0) -> NSDecimalNumber {
     var positionValue = NSDecimalNumber.zero
     if (p.closed) {
         positionValue = calculateClosedPostionValue(p)

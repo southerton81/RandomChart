@@ -13,6 +13,7 @@ enum StringConstants {
     static let newChart = NSLocalizedString("Newchart", comment: "")
     static let sessionTime = NSLocalizedString("Sessiontime", comment: "")
     static let positionSize = NSLocalizedString("Possize", comment: "")
+    static let pNl = NSLocalizedString("Pnl", comment: "")
     
     static let joinLead = NSLocalizedString("Joinlead", comment: "")
     static let nickPrompt = NSLocalizedString("Nick", comment: "")

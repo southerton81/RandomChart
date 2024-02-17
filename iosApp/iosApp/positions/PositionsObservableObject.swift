@@ -8,7 +8,8 @@ class PositionsObservableObject: ObservableObject {
     @Published var calculating = true
     @Published var endSessionCondition: EndSessionCondition? = nil
     @Published var positionSizePct: Double
-    @Published var positionSize = NSDecimalNumber.zero 
+    @Published var positionSize = NSDecimalNumber.zero
+    @Published var currentSessionResultPct = NSDecimalNumber.zero
     
     private let c: CoreDataInventory
     var freeFunds = NSDecimalNumber.zero
@@ -23,6 +24,25 @@ class PositionsObservableObject: ObservableObject {
         self.positionSizePct = positionSizePct
         self.positionSize = totalCap.dividing(by: NSDecimalNumber(100)).multiplying(by: NSDecimalNumber(value: self.positionSizePct))
         self.canOpenNewPos = canOpenNewPosition()
+    }
+    
+    func recalculateCurrentSessionResultPct() async -> NSDecimalNumber {
+        return await c.performRead { (context) -> (NSDecimalNumber) in
+            let lastSessionPositionsRequest = NSFetchRequest<Position>(entityName: "Position")
+            lastSessionPositionsRequest.predicate = NSPredicate(format: "%K == -1", #keyPath(Position.startPeriod))
+            lastSessionPositionsRequest.fetchLimit = 1
+            lastSessionPositionsRequest.sortDescriptors = [NSSortDescriptor(keyPath: \Position.creationDate, ascending: false)]
+             
+            var result = Constants.startFunds
+            if let sessionPositionsResult = try? context.fetch(lastSessionPositionsRequest) {
+                if !sessionPositionsResult.isEmpty {
+                    if let latestSessionResult = sessionPositionsResult.first {
+                        result = getPositionResult(latestSessionResult)
+                    }
+                }
+            }
+            return getDifferenceInPct(result, self.totalCap)
+        }
     }
     
     func maxPositionSizePct() -> Double {
@@ -48,6 +68,13 @@ class PositionsObservableObject: ObservableObject {
             self.canOpenNewPos = canOpenNewPosition()
             self.calculating = false
         }
+         
+        let currentSessionResultPct = await recalculateCurrentSessionResultPct()
+        await MainActor.run {
+            self.currentSessionResultPct = currentSessionResultPct
+        }
+        
+        print (self.currentSessionResultPct)
     }
     
     func canOpenNewPosition() -> Bool {

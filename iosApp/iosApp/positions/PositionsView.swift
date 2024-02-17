@@ -47,19 +47,26 @@ struct PositionsView: View {
                             Text(decimalToString(self.positionsObservable.totalCap, 0))
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                                 .fontWeight(.heavy) +
-                            
                             Text("$")
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                             
                             Text(StringConstants.freeCapital)
-                                .foregroundColor(Color(UIColor.secondaryLabel)).font(Font.callout.weight(.thin)) +
+                                .foregroundColor(Color(UIColor.secondaryLabel)).font(Font.callout.weight(.thin))
                             
                             Text(decimalToString(self.positionsObservable.freeFunds, 0))
                                 .foregroundColor(Color(UIColor.secondaryLabel))
                                 .fontWeight(.bold) +
-                            
                             Text("$")
                                 .foregroundColor(Color(UIColor.secondaryLabel))
+                        }
+                    }
+                    
+                    HStack {
+                        Group {
+                            Text(StringConstants.pNl)
+                                .foregroundColor(Color(UIColor.secondaryLabel)).font(Font.callout.weight(.thin))
+                            Text(decimalToString(self.positionsObservable.currentSessionResultPct) + "%")
+                                .foregroundColor(Color(UIColor.secondaryLabel)).fontWeight(.bold)
                         }
                     }
                     

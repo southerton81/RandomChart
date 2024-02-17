@@ -28,14 +28,14 @@ func mapToUiPosition(_ position: Position, _ currentPriceCents: Int64) -> UiPosi
 }
 
 func mapToUiClosedPosition(_ position: Position) -> UiPosition {
-    let titleText = decimalToString(position.endPrice ?? NSDecimalNumber.zero)
+    let titleText = decimalToString(position.endPrice ?? NSDecimalNumber.zero, 0)
     
     let typeText = position.long ? "Long" : "Short"
     let uiActionButton = position.closed ? nil : UiActionButton(caption: "Close", color: Color.blue)
     
     let lastPositionPrice = position.endPrice!
     
-    let positionResult = getPositionResult(position, 0)
+    let positionResult = getPositionResult(position)
     let positionResultPct = getPositionResultInPct(position.totalSpent, positionResult)
     
     let positionResultText = decimalToString(positionResultPct, 2, showSign: true) + "%"

@@ -57,7 +57,12 @@ struct ProfileView: View {
         List {
             ForEach(getPostitionsList(), id: \.self) { uiPosition in
                 HStack {
-                    Text(uiPosition.titleText)
+                    HStack(spacing: 0) {
+                        Group {
+                            Text(uiPosition.titleText)
+                            Text("$").foregroundColor(Color(UIColor.tertiaryLabel))
+                        }
+                    }
                     Spacer()
                     Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
                 }
@@ -81,7 +86,12 @@ struct ProfileView: View {
             }) {
                 ForEach(getPostitionsList(), id: \.self) { uiPosition in
                     HStack {
-                        Text(uiPosition.titleText)
+                        HStack(spacing: 0) {
+                            Group {
+                                Text(uiPosition.titleText)
+                                Text("$").foregroundColor(Color(UIColor.tertiaryLabel))
+                            }
+                        }
                         Spacer()
                         Text(uiPosition.tradeResultText).foregroundColor(uiPosition.tradeResultTextColor)
                     }
